@@ -1,0 +1,1183 @@
+﻿================================================================================
+    PANDUAN LENGKAP FRONTEND DEVELOPER
+    Sistem Informasi Prodi D3 Teknik Listrik - Politeknik Negeri Manado
+    Backend: Ktor + Supabase + JWT + SMTP Gmail
+================================================================================
+
+Dokumen ini menjelaskan CARA KERJA backend secara menyeluruh agar Frontend
+Developer bisa langsung mengintegrasikan tanpa kebingungan.
+
+Untuk detail teknis request/response setiap endpoint, silakan baca:
+  - API_FULL_DOCUMENTATION_PART1.md
+  - API_FULL_DOCUMENTATION_PART2.md
+
+================================================================================
+DAFTAR ISI
+================================================================================
+
+  BAGIAN 1 : Informasi Dasar & Koneksi
+  BAGIAN 2 : Sistem Autentikasi (Login, Token JWT, Role)
+  BAGIAN 3 : Alur Forgot Password (SMTP Email) â€” PALING PENTING
+  BAGIAN 4 : Manajemen Dosen (CRUD + Foto Profil)
+  BAGIAN 5 : Sistem Keahlian Dosen (Many-to-Many)
+  BAGIAN 6 : Tri Dharma â€” 6 Jenis dalam 1 Endpoint
+  BAGIAN 7 : Fasilitas, Jadwal, Statistik
+  BAGIAN 8 : Media / File Upload
+  BAGIAN 9 : Error Handling & Validasi
+  BAGIAN 10: Tips & Best Practice Frontend
+  BAGIAN 11: Contoh Kode JavaScript/Next.js
+
+================================================================================
+BAGIAN 1: INFORMASI DASAR & KONEKSI
+================================================================================
+
+1.1 BASE URL
+------------
+  Production : https://ktorbackend-elektropoli.up.railway.app/api/v1
+  Lokal      : http://localhost:8080/api/v1
+
+  Semua endpoint WAJIB diawali dengan /api/v1/
+  Contoh lengkap: https://ktorbackend-elektropoli.up.railway.app/api/v1/dosen
+
+1.2 CORS (Cross-Origin Resource Sharing)
+-----------------------------------------
+  Backend sudah dikonfigurasi dengan anyHost(), artinya:
+  - Frontend di Vercel       â†’ BISA konek
+  - Frontend di Netlify      â†’ BISA konek
+  - Frontend di localhost     â†’ BISA konek
+  - Frontend di domain custom â†’ BISA konek
+
+  Method yang diizinkan: GET, POST, PUT, DELETE, PATCH, OPTIONS
+  Header yang diizinkan: Authorization, Content-Type
+  Credentials: Diizinkan (allowCredentials = true)
+
+  KESIMPULAN: Frontend TIDAK PERLU setting proxy atau workaround apapun.
+  Langsung fetch/axios ke URL Railway.
+
+1.3 FORMAT RESPONSE STANDAR
+----------------------------
+  Semua response dari backend menggunakan wrapper yang KONSISTEN:
+
+  SUKSES:
+  {
+    "success": true,
+    "message": "Pesan sukses",
+    "data": { ... atau [...] },
+    "errors": null
+  }
+
+  GAGAL:
+  {
+    "success": false,
+    "message": "Pesan error yang bisa langsung ditampilkan ke user",
+    "data": null,
+    "errors": null
+  }
+
+  TIPS FRONTEND:
+  - Selalu cek field "success" (boolean) untuk menentukan apakah request berhasil.
+  - Field "message" bisa langsung ditampilkan ke user (sudah dalam Bahasa Indonesia).
+  - Field "data" berisi payload utama (object atau array).
+
+1.4 CONTENT-TYPE
+-----------------
+  Ada 2 jenis Content-Type yang digunakan di backend ini:
+
+  a) application/json
+     â†’ Digunakan untuk: Login, Forgot Password, Reset Password, Statistik,
+       Keahlian, dan semua endpoint yang TIDAK ada file upload.
+     â†’ Cara kirim: JSON.stringify({...}) di body
+
+  b) multipart/form-data
+     â†’ Digunakan untuk: Dosen (ada foto), Jadwal (ada file PDF),
+       Fasilitas (ada gambar), Tri Dharma (ada dokumen).
+     â†’ Cara kirim: new FormData() di JavaScript
+     â†’ PENTING: Jangan set Content-Type header manual! Biarkan browser
+       yang otomatis menambahkan boundary.
+
+
+================================================================================
+BAGIAN 2: SISTEM AUTENTIKASI (LOGIN, TOKEN JWT, ROLE)
+================================================================================
+
+2.1 ALUR LOGIN
+--------------
+  Frontend mengirim email + password ke backend.
+  Backend memverifikasi, lalu mengembalikan JWT token.
+
+  LANGKAH:
+  1. User mengisi form login (email + password)
+  2. Frontend kirim POST /api/v1/auth/login dengan body JSON:
+     { "email": "user@email.com", "password": "password123" }
+  3. Backend membalas dengan:
+     - Jika BENAR â†’ { success: true, data: { token: "eyJhb...", expiresAt: 17138... } }
+     - Jika SALAH â†’ { success: false, message: "Email atau password salah" }
+  4. Frontend WAJIB menyimpan token tersebut (localStorage/cookie/state).
+
+2.2 MENYIMPAN TOKEN DI FRONTEND
+---------------------------------
+  Rekomendasi penyimpanan:
+
+  OPSI A - localStorage (paling simpel):
+    localStorage.setItem('token', response.data.token)
+    localStorage.setItem('expiresAt', response.data.expiresAt)
+
+  OPSI B - Cookie httpOnly (paling aman, tapi lebih ribet):
+    Butuh setup middleware di Next.js untuk set cookie dari server side.
+
+  OPSI C - State Management (Zustand/Redux):
+    Simpan di global state, tapi hilang saat refresh halaman.
+    Kombinasikan dengan localStorage untuk persistensi.
+
+  REKOMENDASI: Gunakan localStorage untuk MVP, nanti upgrade ke cookie kalau
+  sudah production-ready.
+
+2.3 MENGIRIM TOKEN KE BACKEND (SETIAP REQUEST YANG BUTUH AUTH)
+---------------------------------------------------------------
+  Setiap endpoint yang membutuhkan autentikasi, frontend WAJIB mengirimkan
+  header Authorization dengan format:
+
+    Authorization: Bearer eyJhbGciOiJIUzI1NiIs...
+
+  Contoh fetch:
+    fetch('/api/v1/dosen/me', {
+      headers: {
+        'Authorization': 'Bearer ' + localStorage.getItem('token')
+      }
+    })
+
+  PENTING:
+  - Huruf "Bearer" diikuti SPASI lalu token. Tanpa spasi = ERROR.
+  - Jika token tidak dikirim â†’ 401 "Header Authorization tidak ditemukan"
+  - Jika token expired â†’ 401 "Token tidak valid, expired, atau Secret tidak cocok"
+  - Jika format salah â†’ 401 "Format token salah"
+
+2.4 ROLE & HAK AKSES
+---------------------
+  Ada 2 role utama di sistem ini:
+
+  a) ADMIN
+     - Bisa melakukan SEMUA operasi CRUD di semua modul.
+     - Bisa menambah/menghapus dosen.
+     - Bisa mengelola fasilitas, jadwal, statistik.
+     - Bisa mengelola master keahlian.
+     - Login dengan: admin@prodi.com / admin123
+
+  b) DOSEN
+     - Bisa melihat data publik (dosen, fasilitas, jadwal, statistik, tri dharma).
+     - Bisa mengelola Tri Dharma MILIKNYA SENDIRI (tambah, edit, hapus).
+     - Bisa mengelola keahlian MILIKNYA SENDIRI.
+     - TIDAK BISA mengubah data Tri Dharma milik dosen lain (403 Forbidden).
+     - TIDAK BISA menambah dosen baru (403 Forbidden).
+
+  TIPS FRONTEND:
+  - Setelah login, decode JWT token untuk mendapatkan role user.
+  - Berdasarkan role, tampilkan/sembunyikan menu/tombol yang sesuai.
+  - Contoh: Tombol "Tambah Dosen" hanya muncul jika role === "admin".
+
+2.5 CARA DECODE JWT DI FRONTEND
+---------------------------------
+  JWT token terdiri dari 3 bagian dipisahkan titik: header.payload.signature
+  Kita hanya perlu decode bagian PAYLOAD (bagian kedua).
+
+  Contoh JavaScript:
+    const token = localStorage.getItem('token');
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    console.log(payload.userId);  // UUID user
+    console.log(payload.email);   // email user
+    console.log(payload.role);    // "admin" atau "dosen"
+
+2.6 TOKEN EXPIRED
+------------------
+  Token berlaku selama 24 JAM sejak login.
+  Field "expiresAt" dalam response login berisi timestamp (millis).
+
+  TIPS FRONTEND:
+  - Simpan expiresAt saat login.
+  - Sebelum setiap request, cek: if (Date.now() > expiresAt) â†’ redirect ke login.
+  - Atau, tangkap response 401 dari backend â†’ redirect ke halaman login.
+  - Tampilkan pesan: "Sesi Anda telah berakhir, silakan login kembali."
+
+
+================================================================================
+BAGIAN 3: ALUR FORGOT PASSWORD (SMTP EMAIL) â€” PALING PENTING!
+================================================================================
+
+  Ini adalah fitur yang paling kompleks dari sisi alur Frontend-Backend.
+  Baca bagian ini dengan SANGAT TELITI.
+
+3.1 GAMBARAN UMUM
+-------------------
+  Alur reset password menggunakan TOKEN yang dikirim via EMAIL ASLI (Gmail SMTP).
+  Token TIDAK pernah muncul di response API (demi keamanan).
+
+  Alur lengkapnya (dari kacamata user/dosen):
+  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+  â”‚  1. Dosen klik "Lupa Password" di halaman Login                    â”‚
+  â”‚  2. Muncul form: "Masukkan Email Anda"                             â”‚
+  â”‚  3. Dosen isi email â†’ Frontend kirim ke POST /auth/forgot-password â”‚
+  â”‚  4. Backend kirim EMAIL ASLI ke inbox Gmail dosen                  â”‚
+  â”‚  5. Dosen buka Gmail, copy TOKEN dari email                        â”‚
+  â”‚  6. Kembali ke website, muncul form:                               â”‚
+  â”‚     "Masukkan Token" + "Masukkan Password Baru"                    â”‚
+  â”‚  7. Frontend kirim ke POST /auth/reset-password                    â”‚
+  â”‚  8. Selesai! Password berhasil diubah, redirect ke Login           â”‚
+  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+
+3.2 HALAMAN-HALAMAN YANG HARUS DIBUAT DI FRONTEND
+---------------------------------------------------
+
+  HALAMAN 1: Form Input Email (Lupa Password)
+  ============================================
+  URL saran: /forgot-password
+
+  Komponen:
+  - Input field: Email
+  - Tombol: "Kirim Token Reset"
+  - Tombol: "Kirim Ulang Token" (muncul setelah token pertama dikirim)
+  - Link: "Kembali ke Login"
+
+  Saat tombol "Kirim Token Reset" diklik:
+  â†’ POST /api/v1/auth/forgot-password
+  â†’ Body: { "email": "dosen@email.com" }
+  â†’ Jika sukses: Tampilkan pesan "Silakan cek email Anda untuk token reset."
+                 Lalu redirect atau tampilkan form input token (Halaman 2).
+  â†’ Jika gagal:  Tampilkan pesan error "Email tidak terdaftar."
+
+  Saat tombol "Kirim Ulang Token" diklik:
+  â†’ POST /api/v1/auth/resend-forgot-password
+  â†’ Body: { "email": "dosen@email.com" }
+  â†’ Tampilkan pesan: "Token baru telah dikirim ulang ke email Anda."
+  â†’ PENTING: Token lama otomatis HANGUS. Yang berlaku hanya token terbaru.
+
+  HALAMAN 2: Form Input Token + Password Baru
+  ============================================
+  URL saran: /reset-password
+
+  Komponen:
+  - Input field: Token (dari email)
+  - Input field: Password Baru
+  - Input field: Konfirmasi Password Baru (validasi di frontend saja)
+  - Tombol: "Ubah Password"
+  - Link: "Kirim Ulang Token" (panggil resend-forgot-password)
+
+  Saat tombol "Ubah Password" diklik:
+  â†’ POST /api/v1/auth/reset-password
+  â†’ Body: { "token": "uuid-token-dari-email", "new_password": "passwordBaru123" }
+  â†’ Jika sukses: Tampilkan pesan "Password berhasil diubah!"
+                 Redirect ke halaman Login.
+  â†’ Jika gagal:  Tampilkan pesan "Token tidak valid atau sudah kadaluarsa."
+                 Sarankan user untuk kirim ulang token.
+
+3.3 CATATAN PENTING FORGOT PASSWORD
+-------------------------------------
+  a) Token berlaku 1 JAM sejak dikirim. Setelah itu expired.
+  b) Token hanya bisa dipakai 1 KALI. Setelah dipakai, langsung dihapus.
+  c) Jika user minta kirim ulang (resend), token LAMA otomatis diganti token BARU.
+  d) Email dikirim dari: polimdoe@gmail.com (Sistem Akademik Kampus).
+  e) Email berisi HTML yang rapi dengan token di dalam kotak bertitik-titik.
+  f) Subjek email: "Reset Password Dosen"
+
+3.4 CONTOH KODE JAVASCRIPT UNTUK FORGOT PASSWORD
+--------------------------------------------------
+
+  // Step 1: Kirim email untuk minta token
+  async function forgotPassword(email) {
+    const res = await fetch(BASE_URL + '/auth/forgot-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email })
+    });
+    const data = await res.json();
+    if (data.success) {
+      alert('Silakan cek email Anda untuk mendapatkan token reset password.');
+      // Tampilkan form input token (halaman 2)
+    } else {
+      alert(data.message); // "Email tidak terdaftar"
+    }
+  }
+
+  // Step 2: Kirim ulang token (jika user tidak menerima email)
+  async function resendToken(email) {
+    const res = await fetch(BASE_URL + '/auth/resend-forgot-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email })
+    });
+    const data = await res.json();
+    alert(data.message);
+  }
+
+  // Step 3: Reset password dengan token dari email
+  async function resetPassword(token, newPassword) {
+    const res = await fetch(BASE_URL + '/auth/reset-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token, new_password: newPassword })
+    });
+    const data = await res.json();
+    if (data.success) {
+      alert('Password berhasil diubah! Silakan login dengan password baru.');
+      window.location.href = '/login';
+    } else {
+      alert(data.message); // "Token tidak valid atau sudah kadaluarsa"
+    }
+  }
+
+
+================================================================================
+BAGIAN 4: MANAJEMEN DOSEN (CRUD + FOTO PROFIL)
+================================================================================
+
+4.1 SIAPA YANG BISA MENGELOLA DOSEN?
+--------------------------------------
+  - HANYA ADMIN yang bisa menambah, mengedit, dan menghapus dosen.
+  - Semua orang (termasuk publik tanpa login) bisa MELIHAT daftar dosen.
+
+4.2 MENAMPILKAN DAFTAR DOSEN (HALAMAN PUBLIK)
+-----------------------------------------------
+  Endpoint: GET /api/v1/dosen
+  Tidak perlu token. Langsung fetch.
+
+  Response berisi array dosen dengan field:
+  - id (UUID) â€” untuk navigasi ke halaman detail
+  - nama
+  - nidn
+  - jabatanFungsional (camelCase! bukan snake_case)
+  - pangkatGolongan
+  - email
+  - noHp
+  - fotoUrl â€” URL lengkap gambar di Supabase Storage. Bisa langsung
+              dipakai di tag <img src={dosen.fotoUrl} />. Jika null, tampilkan avatar default.
+  - keahlian â€” Array of { id, nama_keahlian }. Bisa ditampilkan sebagai tag/badge.
+
+4.3 MENAMPILKAN PROFIL DOSEN YANG SEDANG LOGIN
+------------------------------------------------
+  Endpoint: GET /api/v1/dosen/me
+  BUTUH token (header Authorization).
+
+  Response sama seperti GET /dosen/{id}.
+  Berguna untuk halaman "Profil Saya" di dashboard dosen.
+
+4.4 MENAMBAH DOSEN BARU (ADMIN ONLY)
+--------------------------------------
+  Endpoint: POST /api/v1/dosen
+  Content-Type: multipart/form-data
+  BUTUH token admin.
+
+  Contoh JavaScript:
+    const formData = new FormData();
+    formData.append('nama', 'Dr. Budi Santoso');
+    formData.append('nidn', '0012345678');
+    formData.append('email', 'budi@polimdo.ac.id');
+    formData.append('password', 'password123');       // WAJIB saat create
+    formData.append('jabatan_fungsional', 'Lektor');  // snake_case di form!
+    formData.append('pangkat_golongan', 'III/c');
+    formData.append('no_hp', '08123456789');
+    formData.append('file', fileInput.files[0]);      // foto profil (opsional)
+
+    const res = await fetch(BASE_URL + '/dosen', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + token },
+      // JANGAN set Content-Type! Biarkan browser handle boundary.
+      body: formData
+    });
+
+  PERHATIAN PENTING:
+  - Field di form menggunakan SNAKE_CASE: jabatan_fungsional, pangkat_golongan, no_hp
+  - Tapi di response JSON menggunakan CAMEL_CASE: jabatanFungsional, pangkatGolongan, noHp
+  - Password WAJIB diisi saat create. Tidak bisa diubah via PUT (harus pakai reset password).
+
+4.5 MENGUPDATE DOSEN (ADMIN ONLY)
+-----------------------------------
+  Endpoint: PUT /api/v1/dosen/{id}
+  Content-Type: multipart/form-data
+
+  Hanya kirim field yang ingin diubah (semua opsional).
+  Jika mengirim file baru, foto lama akan DIHAPUS dari storage.
+
+4.6 MENGHAPUS DOSEN (ADMIN ONLY)
+----------------------------------
+  Endpoint: DELETE /api/v1/dosen/{id}
+  Ini akan menghapus dosen DAN akun login-nya dari database.
+
+
+================================================================================
+BAGIAN 5: SISTEM KEAHLIAN DOSEN (MANY-TO-MANY)
+================================================================================
+
+5.1 KONSEP
+-----------
+  Hubungan Dosen-Keahlian adalah Many-to-Many:
+  - 1 Dosen bisa punya BANYAK keahlian (IoT, Robotika, AI, dll).
+  - 1 Keahlian bisa dimiliki BANYAK dosen.
+
+  Ada 2 level pengelolaan:
+  a) Master Keahlian â€” Daftar keahlian yang tersedia (dikelola ADMIN).
+  b) Keahlian Dosen â€” Keahlian yang dipilih oleh masing-masing dosen.
+
+5.2 MENAMPILKAN DAFTAR KEAHLIAN (PUBLIK)
+------------------------------------------
+  GET /api/v1/keahlian
+  Tidak perlu token. Untuk menampilkan pilihan keahlian di form/dropdown.
+
+5.3 ADMIN MENAMBAH MASTER KEAHLIAN
+------------------------------------
+  POST /api/v1/admin/keahlian
+  Body: { "nama_keahlian": "Machine Learning" }
+
+5.4 DOSEN MENAMBAH KEAHLIAN KE PROFILNYA
+------------------------------------------
+  POST /api/v1/dosen/keahlian
+  Body: { "keahlian_id": 3 }
+  Token: Token dosen yang bersangkutan.
+
+  Frontend bisa menampilkan ini sebagai:
+  - Dropdown/Select dari daftar master keahlian.
+  - Tombol "Tambah Keahlian" yang membuka modal.
+
+5.5 DOSEN MENGHAPUS KEAHLIAN DARI PROFILNYA
+----------------------------------------------
+  DELETE /api/v1/dosen/keahlian/{keahlian_id}
+  Token: Token dosen yang bersangkutan.
+
+5.6 ADMIN ASSIGN KEAHLIAN KE DOSEN
+------------------------------------
+  POST /api/v1/admin/keahlian/assign
+  Body: { "dosen_id": "uuid-dosen", "keahlian_id": 1 }
+  Admin bisa menugaskan keahlian ke dosen manapun.
+
+
+================================================================================
+BAGIAN 6: TRI DHARMA â€” 6 JENIS DALAM 1 ENDPOINT
+================================================================================
+
+6.1 KONSEP UTAMA
+------------------
+  Tri Dharma Perguruan Tinggi SEMUA dikelola dalam 1 endpoint: /tri-dharma
+  Ada 6 jenis yang didukung:
+    1. Penelitian
+    2. Pengabdian
+    3. Buku Ajar
+    4. Publikasi
+    5. HKI (Hak Kekayaan Intelektual)
+    6. Sertifikat
+
+  Frontend membedakan jenis melalui QUERY PARAMETER ?jenis=...
+  BUKAN melalui endpoint yang berbeda!
+
+6.2 MENAMPILKAN DATA (PUBLIK)
+------------------------------
+  Semua Tri Dharma:
+    GET /api/v1/tri-dharma
+
+  Filter berdasarkan jenis:
+    GET /api/v1/tri-dharma?jenis=Penelitian
+    GET /api/v1/tri-dharma?jenis=Pengabdian
+    GET /api/v1/tri-dharma?jenis=Buku Ajar
+    GET /api/v1/tri-dharma?jenis=Publikasi
+    GET /api/v1/tri-dharma?jenis=HKI
+    GET /api/v1/tri-dharma?jenis=Sertifikat
+
+  TIPS FRONTEND:
+  - Di halaman "Penelitian", panggil GET /tri-dharma?jenis=Penelitian
+  - Di halaman "Publikasi", panggil GET /tri-dharma?jenis=Publikasi
+  - dst. Satu endpoint untuk semuanya!
+
+6.3 MENAMPILKAN DATA MILIK DOSEN YANG LOGIN
+---------------------------------------------
+  GET /api/v1/tri-dharma/my
+  GET /api/v1/tri-dharma/my?jenis=Penelitian
+
+  Butuh token dosen. Hanya menampilkan data milik dosen tersebut.
+  Cocok untuk halaman "Dashboard Dosen" â†’ tab "Penelitian Saya", "Publikasi Saya", dll.
+
+6.4 MENAMBAH TRI DHARMA (DOSEN/ADMIN)
+---------------------------------------
+  POST /api/v1/tri-dharma
+  Content-Type: multipart/form-data
+
+  Contoh JavaScript:
+    const formData = new FormData();
+    formData.append('jenis', 'Penelitian');      // WAJIB, harus salah satu dari 6 jenis
+    formData.append('judul', 'Analisis IoT');     // WAJIB
+    formData.append('tahun', '2024');
+    formData.append('deskripsi', 'Penelitian tentang...');
+    formData.append('file', fileInput.files[0]);  // Dokumen PDF/gambar (opsional)
+    formData.append('anggota_dosen_ids', 'uuid-dosen-2,uuid-dosen-3'); // opsional
+
+    const res = await fetch(BASE_URL + '/tri-dharma', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + token },
+      body: formData
+    });
+
+  CATATAN ANGGOTA:
+  - Field "anggota_dosen_ids" berupa STRING comma-separated UUID.
+  - Contoh: "uuid-1,uuid-2,uuid-3"
+  - Dosen yang membuat otomatis menjadi "Ketua".
+  - Dosen-dosen di anggota_dosen_ids akan dicatat sebagai "Anggota".
+
+6.5 OWNERSHIP (KEPEMILIKAN)
+-----------------------------
+  - Dosen HANYA BISA edit/hapus Tri Dharma yang dosen_id-nya MILIKNYA.
+  - Jika dosen mencoba edit/hapus milik dosen lain â†’ 403 Forbidden.
+  - Admin bisa edit/hapus semua Tri Dharma tanpa batasan.
+
+6.6 SARAN DESAIN UI UNTUK TRI DHARMA
+--------------------------------------
+  Opsi A: Tab Navigation
+    [Penelitian] [Pengabdian] [Buku Ajar] [Publikasi] [HKI] [Sertifikat]
+    Setiap tab memanggil GET /tri-dharma?jenis=XXX
+
+  Opsi B: Sidebar Menu
+    Sidebar dengan 6 menu, masing-masing menampilkan tabel data.
+
+  Opsi C: Dropdown Filter
+    Satu halaman "Tri Dharma" dengan dropdown jenis di atas tabel.
+
+================================================================================
+BAGIAN 7: FASILITAS, JADWAL, STATISTIK
+================================================================================
+
+7.1 FASILITAS
+--------------
+  Fasilitas adalah data laboratorium, ruangan, atau sarana prodi.
+
+  TAMPILKAN (PUBLIK):
+    GET /api/v1/fasilitas         â†’ Semua fasilitas
+    GET /api/v1/fasilitas/{id}    â†’ Detail satu fasilitas
+
+  Response fasilitas menyertakan array "media" berisi gambar-gambar:
+    {
+      "id": "uuid",
+      "nama_fasilitas": "Lab IoT",
+      "deskripsi": "...",
+      "media": [
+        { "id": "uuid-media-1", "file_url": "https://..." },
+        { "id": "uuid-media-2", "file_url": "https://..." }
+      ]
+    }
+
+  TIPS: Fasilitas bisa punya BANYAK gambar (gallery). Tampilkan sebagai carousel
+  atau grid gambar. URL di field file_url bisa langsung dipakai di <img src="...">.
+
+  TAMBAH (ADMIN ONLY):
+    POST /api/v1/fasilitas
+    Content-Type: multipart/form-data
+    Fields: nama_fasilitas (atau judul_fasilitas), deskripsi, file (gambar, opsional)
+
+  UPDATE (ADMIN ONLY):
+    PUT /api/v1/fasilitas/{id}
+    Content-Type: multipart/form-data
+    PENTING: Saat PUT, jika mengirim file baru, file tersebut DITAMBAHKAN ke list
+    media (tidak menggantikan yang lama). Untuk HAPUS gambar tertentu, gunakan
+    endpoint DELETE /api/v1/media/{mediaId} secara terpisah.
+
+  HAPUS (ADMIN ONLY):
+    DELETE /api/v1/fasilitas/{id}
+
+7.2 JADWAL PERKULIAHAN
+------------------------
+  Jadwal adalah dokumen PDF/file yang berisi jadwal semester.
+
+  TAMPILKAN (PUBLIK):
+    GET /api/v1/jadwal
+
+  Response:
+    {
+      "data": [
+        {
+          "id": 1,
+          "nama_jadwal": "Jadwal Semester Ganjil 2024",
+          "tanggal_upload": "2024-08-01",
+          "file_url": "https://xxx.supabase.co/storage/.../jadwal.pdf"
+        }
+      ]
+    }
+
+  TIPS: Field "file_url" berisi link ke file PDF. Frontend bisa menampilkannya
+  sebagai:
+  - Tombol "Download" yang membuka file_url di tab baru.
+  - Embed PDF viewer menggunakan <iframe> atau library react-pdf.
+  - Link langsung: <a href={jadwal.file_url} target="_blank">Download</a>
+
+  TAMBAH (ADMIN ONLY):
+    POST /api/v1/jadwal
+    Content-Type: multipart/form-data
+    Fields: nama_jadwal (WAJIB), file (WAJIB - file PDF/dokumen)
+
+  UPDATE (ADMIN ONLY):
+    PUT /api/v1/jadwal/{id}
+    Jika upload file baru, file lama DIHAPUS dari storage.
+
+  HAPUS (ADMIN ONLY):
+    DELETE /api/v1/jadwal/{id}
+
+7.3 STATISTIK MAHASISWA
+-------------------------
+  Statistik adalah data angka per tahun (jumlah pendaftar, diterima, lulusan).
+
+  TAMPILKAN (PUBLIK):
+    GET /api/v1/statistik
+
+  Response:
+    {
+      "data": [
+        { "id": 1, "tahun": 2022, "jumlah_pendaftar": 356, "jumlah_diterima": 180, "jumlah_lulusan": 162 },
+        { "id": 2, "tahun": 2023, "jumlah_pendaftar": 410, "jumlah_diterima": 178, "jumlah_lulusan": 180 }
+      ]
+    }
+
+  TIPS: Data ini cocok ditampilkan sebagai:
+  - Bar Chart (perbandingan per tahun)
+  - Line Chart (tren dari tahun ke tahun)
+  - Tabel dengan kolom: Tahun, Pendaftar, Diterima, Lulusan
+  Library rekomendasi: Chart.js, Recharts (React), ApexCharts
+
+  TAMBAH (ADMIN ONLY):
+    POST /api/v1/statistik
+    Content-Type: application/json
+    Body: { "tahun": 2026, "jumlah_pendaftar": 500, "jumlah_diterima": 200, "jumlah_lulusan": 190 }
+
+  UPDATE (ADMIN ONLY):
+    PUT /api/v1/statistik/{id}
+    Body sama seperti POST.
+
+  HAPUS (ADMIN ONLY):
+    DELETE /api/v1/statistik/{id}
+
+
+================================================================================
+BAGIAN 8: MEDIA / FILE UPLOAD
+================================================================================
+
+8.1 KONSEP MEDIA
+------------------
+  Tabel "media" adalah tabel POLYMORPHIC yang menyimpan file/gambar untuk
+  berbagai entity. Saat ini digunakan oleh: Fasilitas dan Tri Dharma.
+
+  Setiap record media memiliki:
+  - id (UUID)
+  - entity_type ("fasilitas" atau "tri_dharma")
+  - entity_id (UUID dari fasilitas/tri_dharma yang memilikinya)
+  - file_url (URL lengkap di Supabase Storage)
+
+8.2 MENGAMBIL MEDIA BERDASARKAN ENTITY
+----------------------------------------
+  GET /api/v1/media/entity/{entityType}/{entityId}
+
+  Contoh:
+    GET /api/v1/media/entity/fasilitas/uuid-fasilitas-123
+    GET /api/v1/media/entity/tri_dharma/uuid-tridharma-456
+
+8.3 MENGHAPUS MEDIA SPESIFIK
+------------------------------
+  DELETE /api/v1/media/{mediaId}
+  Butuh token.
+
+  Aturan ownership:
+  - Media fasilitas: Hanya ADMIN yang bisa hapus.
+  - Media tri_dharma: Admin ATAU dosen pemilik yang bisa hapus.
+
+8.4 CARA UPLOAD FILE DI FRONTEND
+----------------------------------
+  Untuk semua endpoint yang menerima file, gunakan FormData:
+
+    const fileInput = document.getElementById('file-input');
+    const formData = new FormData();
+    formData.append('file', fileInput.files[0]);
+    formData.append('nama_jadwal', 'Jadwal Semester Ganjil');
+
+    fetch(BASE_URL + '/jadwal', {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + token
+        // JANGAN set Content-Type! Browser otomatis menambahkan boundary.
+      },
+      body: formData
+    });
+
+  PENTING â€” KESALAHAN UMUM FRONTEND:
+  - JANGAN pernah set header Content-Type: 'multipart/form-data' secara manual!
+    Browser HARUS menambahkan boundary sendiri. Jika kamu set manual,
+    backend akan gagal mem-parse file.
+  - BENAR: headers: { 'Authorization': 'Bearer xxx' }
+  - SALAH: headers: { 'Authorization': 'Bearer xxx', 'Content-Type': 'multipart/form-data' }
+
+8.5 PERILAKU FILE SAAT UPDATE (PUT)
+-------------------------------------
+  | Entity      | Perilaku saat PUT dengan file baru                    |
+  |-------------|-------------------------------------------------------|
+  | Dosen foto  | Foto lama DIHAPUS, diganti foto baru                  |
+  | Jadwal      | File lama DIHAPUS, diganti file baru                  |
+  | Tri Dharma  | Field file_url di-update, file lama tetap di storage  |
+  | Fasilitas   | File baru DITAMBAHKAN ke list media (gallery)         |
+  |             | Untuk hapus gambar lama â†’ gunakan DELETE /media/{id}  |
+
+
+================================================================================
+BAGIAN 9: ERROR HANDLING & VALIDASI
+================================================================================
+
+9.1 HTTP STATUS CODE YANG DIGUNAKAN
+-------------------------------------
+  200 â€” OK (sukses GET, PUT, DELETE)
+  201 â€” Created (sukses POST/create)
+  400 â€” Bad Request (validasi gagal: input kosong, format salah, dll)
+  401 â€” Unauthorized (token tidak ada, expired, atau format salah)
+  403 â€” Forbidden (role tidak punya akses, atau bukan pemilik data)
+  404 â€” Not Found (data tidak ditemukan)
+  429 â€” Too Many Requests (rate limit terlampaui)
+  500 â€” Internal Server Error (masalah server)
+
+9.2 CARA HANDLE ERROR DI FRONTEND
+-----------------------------------
+  Contoh pattern yang direkomendasikan:
+
+    async function apiCall(url, options = {}) {
+      try {
+        const res = await fetch(BASE_URL + url, {
+          ...options,
+          headers: {
+            'Authorization': 'Bearer ' + getToken(),
+            ...options.headers
+          }
+        });
+
+        const data = await res.json();
+
+        if (res.status === 401) {
+          // Token expired atau invalid
+          localStorage.removeItem('token');
+          window.location.href = '/login';
+          return null;
+        }
+
+        if (res.status === 403) {
+          alert('Anda tidak memiliki akses untuk melakukan tindakan ini.');
+          return null;
+        }
+
+        if (res.status === 429) {
+          alert('Terlalu banyak percobaan. Silakan tunggu 1 menit.');
+          return null;
+        }
+
+        if (!data.success) {
+          // Tampilkan pesan error dari backend (sudah Bahasa Indonesia)
+          alert(data.message);
+          return null;
+        }
+
+        return data;
+      } catch (error) {
+        alert('Gagal terhubung ke server. Periksa koneksi internet Anda.');
+        return null;
+      }
+    }
+
+9.3 VALIDASI INPUT DI FRONTEND (SEBELUM KIRIM KE BACKEND)
+-----------------------------------------------------------
+  Meskipun backend sudah memvalidasi, sebaiknya frontend juga validasi:
+
+  LOGIN:
+  - Email tidak boleh kosong dan harus format email valid.
+  - Password tidak boleh kosong.
+
+  FORGOT PASSWORD:
+  - Email tidak boleh kosong.
+
+  RESET PASSWORD:
+  - Token tidak boleh kosong.
+  - Password baru minimal 6 karakter (rekomendasi).
+  - Konfirmasi password harus sama dengan password baru.
+
+  DOSEN (CREATE):
+  - Nama tidak boleh kosong.
+  - Password WAJIB diisi.
+  - Email harus format valid.
+
+  TRI DHARMA (CREATE):
+  - Jenis WAJIB dipilih dan harus salah satu dari 6 nilai yang valid.
+  - Judul WAJIB diisi.
+  - Tahun harus antara 2000-2100 (jika diisi).
+
+  JADWAL (CREATE):
+  - Nama jadwal WAJIB diisi.
+  - File WAJIB di-upload.
+
+  STATISTIK:
+  - Tahun, jumlah_pendaftar, jumlah_diterima, jumlah_lulusan â€” semuanya angka.
+
+9.4 RATE LIMITING
+------------------
+  Endpoint auth (login, forgot-password, resend, reset-password) dibatasi:
+  - Maksimal 30 request per 60 detik per IP.
+  - Jika melebihi batas â†’ 429 Too Many Requests.
+
+  TIPS: Disable tombol submit selama request berlangsung (loading state)
+  untuk mencegah user menekan tombol berkali-kali.
+
+
+================================================================================
+BAGIAN 10: TIPS & BEST PRACTICE FRONTEND
+================================================================================
+
+10.1 STRUKTUR HALAMAN YANG DISARANKAN
+---------------------------------------
+
+  HALAMAN PUBLIK (tanpa login):
+  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+  â”‚  /                    â†’ Landing page           â”‚
+  â”‚  /dosen               â†’ Daftar dosen           â”‚
+  â”‚  /dosen/[id]          â†’ Detail dosen           â”‚
+  â”‚  /fasilitas           â†’ Daftar fasilitas       â”‚
+  â”‚  /fasilitas/[id]      â†’ Detail fasilitas       â”‚
+  â”‚  /jadwal              â†’ Daftar jadwal           â”‚
+  â”‚  /penelitian          â†’ Tri Dharma Penelitian  â”‚
+  â”‚  /pengabdian          â†’ Tri Dharma Pengabdian  â”‚
+  â”‚  /buku-ajar           â†’ Tri Dharma Buku Ajar   â”‚
+  â”‚  /publikasi           â†’ Tri Dharma Publikasi   â”‚
+  â”‚  /hki                 â†’ Tri Dharma HKI          â”‚
+  â”‚  /sertifikat          â†’ Tri Dharma Sertifikat  â”‚
+  â”‚  /statistik           â†’ Grafik statistik       â”‚
+  â”‚  /login               â†’ Halaman login           â”‚
+  â”‚  /forgot-password     â†’ Form lupa password      â”‚
+  â”‚  /reset-password      â†’ Form reset password     â”‚
+  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+
+  HALAMAN ADMIN (setelah login sebagai admin):
+  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+  â”‚  /admin/dashboard     â†’ Dashboard admin         â”‚
+  â”‚  /admin/dosen         â†’ Kelola dosen (CRUD)    â”‚
+  â”‚  /admin/fasilitas     â†’ Kelola fasilitas       â”‚
+  â”‚  /admin/jadwal        â†’ Kelola jadwal           â”‚
+  â”‚  /admin/statistik     â†’ Kelola statistik       â”‚
+  â”‚  /admin/keahlian      â†’ Kelola master keahlian â”‚
+  â”‚  /admin/tri-dharma    â†’ Lihat semua tri dharma â”‚
+  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+
+  HALAMAN DOSEN (setelah login sebagai dosen):
+  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+  â”‚  /dashboard           â†’ Dashboard dosen         â”‚
+  â”‚  /profil              â†’ Profil saya (GET /me)  â”‚
+  â”‚  /tri-dharma-saya     â†’ Tri Dharma milik saya  â”‚
+  â”‚  /keahlian-saya       â†’ Kelola keahlian saya   â”‚
+  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+
+10.2 PROTEKSI HALAMAN (ROUTE GUARD)
+-------------------------------------
+  Contoh Next.js middleware atau wrapper:
+
+    function ProtectedRoute({ children, requiredRole }) {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        window.location.href = '/login';
+        return null;
+      }
+
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      if (requiredRole && payload.role !== requiredRole) {
+        window.location.href = '/';
+        return null;
+      }
+
+      return children;
+    }
+
+    // Penggunaan:
+    <ProtectedRoute requiredRole="admin">
+      <AdminDashboard />
+    </ProtectedRoute>
+
+10.3 LOADING STATE
+-------------------
+  Selalu tampilkan loading indicator saat menunggu response dari backend.
+  Terutama untuk:
+  - Login (bisa lambat 1-2 detik)
+  - Forgot Password (bisa lambat 10-20 detik karena mengirim email)
+  - Upload file (tergantung ukuran file)
+
+10.4 REFRESH DATA SETELAH MUTASI
+----------------------------------
+  Setelah melakukan POST, PUT, atau DELETE, SELALU refresh data dari backend:
+    // Setelah berhasil tambah tri dharma
+    await createTriDharma(formData);
+    // Refresh list
+    const updated = await fetch(BASE_URL + '/tri-dharma/my?jenis=Penelitian');
+
+10.5 TAMPILAN GAMBAR
+---------------------
+  Semua URL gambar dari backend sudah berupa URL LENGKAP Supabase Storage.
+  Langsung pakai di img tag:
+    <img src={dosen.fotoUrl} alt={dosen.nama} />
+    <img src={media.file_url} alt="Foto fasilitas" />
+
+  Jika field bernilai null, tampilkan placeholder:
+    <img src={dosen.fotoUrl || '/default-avatar.png'} />
+
+
+================================================================================
+BAGIAN 11: CONTOH KODE JAVASCRIPT/NEXT.JS
+================================================================================
+
+11.1 SETUP API SERVICE
+------------------------
+  Buat file: services/api.js
+
+    const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://ktorbackend-elektropoli.up.railway.app/api/v1';
+
+    function getToken() {
+      if (typeof window !== 'undefined') {
+        return localStorage.getItem('token');
+      }
+      return null;
+    }
+
+    export async function apiGet(endpoint) {
+      const headers = {};
+      const token = getToken();
+      if (token) headers['Authorization'] = 'Bearer ' + token;
+
+      const res = await fetch(BASE_URL + endpoint, { headers });
+      return res.json();
+    }
+
+    export async function apiPost(endpoint, body, isFormData = false) {
+      const headers = {};
+      const token = getToken();
+      if (token) headers['Authorization'] = 'Bearer ' + token;
+      if (!isFormData) headers['Content-Type'] = 'application/json';
+
+      const res = await fetch(BASE_URL + endpoint, {
+        method: 'POST',
+        headers,
+        body: isFormData ? body : JSON.stringify(body)
+      });
+      return res.json();
+    }
+
+    export async function apiPut(endpoint, body, isFormData = false) {
+      const headers = {};
+      const token = getToken();
+      if (token) headers['Authorization'] = 'Bearer ' + token;
+      if (!isFormData) headers['Content-Type'] = 'application/json';
+
+      const res = await fetch(BASE_URL + endpoint, {
+        method: 'PUT',
+        headers,
+        body: isFormData ? body : JSON.stringify(body)
+      });
+      return res.json();
+    }
+
+    export async function apiDelete(endpoint) {
+      const headers = {};
+      const token = getToken();
+      if (token) headers['Authorization'] = 'Bearer ' + token;
+
+      const res = await fetch(BASE_URL + endpoint, {
+        method: 'DELETE',
+        headers
+      });
+      return res.json();
+    }
+
+11.2 CONTOH: HALAMAN LOGIN
+----------------------------
+    import { apiPost } from '@/services/api';
+
+    export default function LoginPage() {
+      const [email, setEmail] = useState('');
+      const [password, setPassword] = useState('');
+      const [loading, setLoading] = useState(false);
+
+      async function handleLogin(e) {
+        e.preventDefault();
+        setLoading(true);
+
+        const data = await apiPost('/auth/login', { email, password });
+
+        if (data.success) {
+          localStorage.setItem('token', data.data.token);
+          localStorage.setItem('expiresAt', data.data.expiresAt);
+          // Decode role
+          const payload = JSON.parse(atob(data.data.token.split('.')[1]));
+          if (payload.role === 'admin') {
+            window.location.href = '/admin/dashboard';
+          } else {
+            window.location.href = '/dashboard';
+          }
+        } else {
+          alert(data.message);
+        }
+        setLoading(false);
+      }
+
+      return (
+        <form onSubmit={handleLogin}>
+          <input type="email" value={email} onChange={e => setEmail(e.target.value)} />
+          <input type="password" value={password} onChange={e => setPassword(e.target.value)} />
+          <button type="submit" disabled={loading}>
+            {loading ? 'Loading...' : 'Login'}
+          </button>
+        </form>
+      );
+    }
+
+11.3 CONTOH: HALAMAN DAFTAR DOSEN
+-----------------------------------
+    import { apiGet } from '@/services/api';
+
+    export default function DosenPage() {
+      const [dosenList, setDosenList] = useState([]);
+
+      useEffect(() => {
+        apiGet('/dosen').then(data => {
+          if (data.success) setDosenList(data.data);
+        });
+      }, []);
+
+      return (
+        <div>
+          {dosenList.map(dosen => (
+            <div key={dosen.id}>
+              <img src={dosen.fotoUrl || '/default-avatar.png'} />
+              <h3>{dosen.nama}</h3>
+              <p>NIDN: {dosen.nidn}</p>
+              <p>Jabatan: {dosen.jabatanFungsional}</p>
+              <div>
+                {dosen.keahlian?.map(k => (
+                  <span key={k.id} className="badge">{k.nama_keahlian}</span>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+11.4 CONTOH: TAMBAH TRI DHARMA DENGAN FILE UPLOAD
+----------------------------------------------------
+    async function handleSubmit(e) {
+      e.preventDefault();
+      const formData = new FormData();
+      formData.append('jenis', 'Penelitian');
+      formData.append('judul', judul);
+      formData.append('tahun', tahun);
+      formData.append('deskripsi', deskripsi);
+      if (fileRef.current.files[0]) {
+        formData.append('file', fileRef.current.files[0]);
+      }
+      if (anggotaIds.length > 0) {
+        formData.append('anggota_dosen_ids', anggotaIds.join(','));
+      }
+
+      const data = await apiPost('/tri-dharma', formData, true);
+      if (data.success) {
+        alert('Berhasil ditambahkan!');
+        router.push('/tri-dharma-saya');
+      } else {
+        alert(data.message);
+      }
+    }
+
+11.5 CONTOH: ALUR LENGKAP FORGOT PASSWORD
+-------------------------------------------
+    // Page: /forgot-password
+    function ForgotPasswordPage() {
+      const [email, setEmail] = useState('');
+      const [sent, setSent] = useState(false);
+
+      async function handleSend() {
+        const data = await apiPost('/auth/forgot-password', { email });
+        if (data.success) {
+          setSent(true);
+          alert('Token telah dikirim ke email Anda. Silakan cek inbox/spam.');
+        } else {
+          alert(data.message);
+        }
+      }
+
+      async function handleResend() {
+        const data = await apiPost('/auth/resend-forgot-password', { email });
+        alert(data.message);
+      }
+
+      if (sent) {
+        return (
+          <div>
+            <p>Token telah dikirim ke {email}</p>
+            <button onClick={handleResend}>Kirim Ulang Token</button>
+            <a href="/reset-password">Saya sudah punya token â†’ Masukkan di sini</a>
+          </div>
+        );
+      }
+
+      return (
+        <div>
+          <input type="email" value={email} onChange={e => setEmail(e.target.value)} />
+          <button onClick={handleSend}>Kirim Token Reset</button>
+        </div>
+      );
+    }
+
+    // Page: /reset-password
+    function ResetPasswordPage() {
+      const [token, setToken] = useState('');
+      const [newPassword, setNewPassword] = useState('');
+      const [confirmPassword, setConfirmPassword] = useState('');
+
+      async function handleReset() {
+        if (newPassword !== confirmPassword) {
+          alert('Password dan konfirmasi tidak sama!');
+          return;
+        }
+        const data = await apiPost('/auth/reset-password', {
+          token,
+          new_password: newPassword
+        });
+        if (data.success) {
+          alert('Password berhasil diubah! Silakan login.');
+          window.location.href = '/login';
+        } else {
+          alert(data.message);
+        }
+      }
+
+      return (
+        <div>
+          <input placeholder="Token dari email" value={token} onChange={e => setToken(e.target.value)} />
+          <input type="password" placeholder="Password Baru" value={newPassword} onChange={e => setNewPassword(e.target.value)} />
+          <input type="password" placeholder="Konfirmasi Password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} />
+          <button onClick={handleReset}>Ubah Password</button>
+        </div>
+      );
+    }
+
+
+================================================================================
+CATATAN AKHIR
+================================================================================
+
+1. Semua response dari backend KONSISTEN menggunakan format ApiResponse.
+   Frontend cukup cek field "success" (true/false) untuk semua endpoint.
+
+2. Pesan error dari backend sudah dalam Bahasa Indonesia dan bisa langsung
+   ditampilkan ke user tanpa perlu translasi.
+
+3. Jangan lupa set environment variable di Frontend (.env.local):
+   NEXT_PUBLIC_API_URL=https://ktorbackend-elektropoli.up.railway.app/api/v1
+
+4. Backend sudah mengizinkan CORS dari semua origin (anyHost).
+   Jadi frontend bisa dideploy di Vercel, Netlify, atau hosting manapun.
+
+5. Untuk pertanyaan lebih lanjut, baca API_FULL_DOCUMENTATION_PART1.md
+   dan API_FULL_DOCUMENTATION_PART2.md untuk detail request/response
+   setiap endpoint.
+
+================================================================================
+                        SELESAI â€” SELAMAT CODING!
+================================================================================
+
