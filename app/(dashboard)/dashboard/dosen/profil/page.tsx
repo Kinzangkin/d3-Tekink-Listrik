@@ -120,7 +120,7 @@ export default function DosenProfilPage() {
             </Avatar>
             <div className="w-full">
               <FileUploadZone 
-                onFilesSelected={(files) => setSelectedFile(files[0])} 
+                onChange={(files) => setSelectedFile(files[0])} 
                 accept="image/*" 
                 label="Ubah Foto Profil" 
                 maxSize={2} 
