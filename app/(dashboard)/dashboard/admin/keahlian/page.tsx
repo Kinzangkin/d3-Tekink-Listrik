@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { PageHeader } from "@/components/dashboard/PageHeader"
 import { DataTable } from "@/components/dashboard/DataTable"
 import { DeleteConfirmDialog } from "@/components/dashboard/DeleteConfirmDialog"
@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Plus, Trash2, Loader2 } from "lucide-react"
 import { apiGet, apiPost, apiDelete } from "@/services/api"
-import { useEffect } from "react"
+
 
 export default function AdminKeahlianPage() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)

@@ -1,13 +1,13 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { useParams, useRouter } from "next/navigation"
 import Image from "next/image"
 import Link from "next/link"
 import { motion, AnimatePresence } from "framer-motion"
 import { Navbar } from "@/components/layout/Navbar/Navbar"
 import { Footer } from "@/components/layout/Footer/Footer"
-import { useEffect, useState } from "react"
+
 import { apiGet } from "@/services/api"
 import { Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
