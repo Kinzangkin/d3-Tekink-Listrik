@@ -143,7 +143,8 @@ export default function DosenTriDharmaPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2 col-span-2">
                   <Label htmlFor="jenis" className="text-xs font-bold text-neutral-500 uppercase">Jenis Kegiatan</Label>
-                  <Select value={formData.jenis} onValueChange={(val) => setFormData(prev => ({...prev, jenis: val}))}>
+                  <Select value={formData.jenis} onValueChange={(val) => setFormData(prev => ({...prev, jenis: val || ""}))}>
+
                     <SelectTrigger className="h-12 rounded-xl border-neutral-200">
                       <SelectValue placeholder="Pilih Jenis" />
                     </SelectTrigger>

@@ -164,7 +164,8 @@ export default function DosenKeahlianPage() {
                 <label className="text-xs font-bold text-neutral-500 uppercase tracking-wider">
                   Pilih Bidang
                 </label>
-                <Select value={selectedKeahlian} onValueChange={setSelectedKeahlian} disabled={isLoading || availableKeahlian.length === 0}>
+                <Select value={selectedKeahlian} onValueChange={(val) => setSelectedKeahlian(val || "")} disabled={isLoading || availableKeahlian.length === 0}>
+
                   <SelectTrigger className="w-full h-12 rounded-xl">
                     <SelectValue placeholder={
                       isLoading ? "Memuat data..." : 
