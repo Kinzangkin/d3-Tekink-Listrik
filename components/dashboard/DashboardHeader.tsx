@@ -31,6 +31,38 @@ export function DashboardHeader() {
     name: pathRole === "admin" ? "Administrator" : "Dosen"
   })
 
+  const [searchQuery, setSearchQuery] = useState("")
+  const [showSearchResults, setShowSearchResults] = useState(false)
+  
+  const adminMenu = [
+    { title: "Overview", url: "/dashboard/admin" },
+    { title: "Data Dosen", url: "/dashboard/admin/dosen" },
+    { title: "Statistik Mahasiswa", url: "/dashboard/admin/statistik" },
+    { title: "Jadwal Kuliah", url: "/dashboard/admin/jadwal" },
+    { title: "Fasilitas", url: "/dashboard/admin/fasilitas" },
+    { title: "Tri Dharma", url: "/dashboard/admin/tri-dharma" },
+    { title: "Master Keahlian", url: "/dashboard/admin/keahlian" },
+  ]
+
+  const dosenMenu = [
+    { title: "Overview", url: "/dashboard/dosen" },
+    { title: "Profil Saya", url: "/dashboard/dosen/profil" },
+    { title: "Keahlian", url: "/dashboard/dosen/keahlian" },
+    { title: "Tri Dharma", url: "/dashboard/dosen/tri-dharma" },
+    { title: "Publikasi", url: "/dashboard/dosen/publikasi" },
+    { title: "Penelitian", url: "/dashboard/dosen/penelitian" },
+    { title: "Pengabdian", url: "/dashboard/dosen/pengabdian" },
+    { title: "Buku Ajar", url: "/dashboard/dosen/buku-ajar" },
+    { title: "HKI", url: "/dashboard/dosen/hki" },
+    { title: "Sertifikat", url: "/dashboard/dosen/sertifikat" },
+  ]
+
+  const menuItems = userState.role === "admin" ? adminMenu : dosenMenu
+  const filteredResults = searchQuery 
+    ? menuItems.filter(item => item.title.toLowerCase().includes(searchQuery.toLowerCase()))
+    : []
+
+
   useEffect(() => {
     const fetchUser = async () => {
       try {
@@ -85,21 +117,77 @@ export function DashboardHeader() {
       <div className="flex items-center gap-4 flex-1">
         <SidebarTrigger className="text-neutral-500 hover:text-primary hover:bg-primary/10" />
         
-        {/* Search - Decorative */}
+        {/* Search - Functional */}
         <div className="relative max-w-md w-full hidden md:block">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" size={16} />
           <Input 
             placeholder="Cari menu atau data..." 
             className="pl-9 h-9 bg-neutral-50/50 border-neutral-200 rounded-full focus:border-primary focus:ring-1 focus:ring-primary text-sm shadow-none"
+            value={searchQuery}
+            onChange={(e) => {
+              setSearchQuery(e.target.value)
+              setShowSearchResults(true)
+            }}
+            onBlur={() => setTimeout(() => setShowSearchResults(false), 200)}
+            onFocus={() => setShowSearchResults(true)}
           />
+          {showSearchResults && searchQuery && (
+            <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-xl border border-neutral-100 overflow-hidden z-50">
+              <div className="p-2">
+                <p className="text-[10px] font-black uppercase tracking-widest text-neutral-400 px-3 py-2">Hasil Pencarian Menu</p>
+                {filteredResults.length > 0 ? filteredResults.map((result) => (
+                  <button
+                    key={result.url}
+                    onClick={() => {
+                      router.push(result.url)
+                      setSearchQuery("")
+                    }}
+                    className="w-full text-left px-4 py-2.5 text-sm font-bold text-neutral-700 hover:bg-primary/5 hover:text-primary rounded-xl transition-colors flex items-center justify-between group"
+                  >
+                    {result.title}
+                    <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Search size={14} className="text-primary/50" />
+                    </div>
+                  </button>
+                )) : (
+                  <p className="px-4 py-3 text-sm text-neutral-500 italic">Menu tidak ditemukan...</p>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
+
       <div className="flex items-center gap-3">
-        <Button variant="ghost" size="icon" className="text-neutral-500 hover:text-primary rounded-full relative">
-          <Bell size={18} />
-          <span className="absolute top-2 right-2 w-2 h-2 bg-rose-500 rounded-full border-2 border-white"></span>
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" className="text-neutral-500 hover:text-primary rounded-full relative">
+              <Bell size={18} />
+              <span className="absolute top-2 right-2 w-2 h-2 bg-rose-500 rounded-full border-2 border-white"></span>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-80 rounded-3xl p-0 overflow-hidden">
+            <div className="p-4 border-b border-neutral-100 bg-neutral-50/50">
+              <h4 className="font-black text-sm uppercase tracking-tight text-neutral-800">Notifikasi Terkini</h4>
+            </div>
+            <div className="max-h-80 overflow-y-auto">
+              <div className="p-4 text-center py-8">
+                <div className="w-12 h-12 bg-neutral-50 rounded-2xl flex items-center justify-center mx-auto mb-3 text-neutral-300">
+                  <Bell size={24} />
+                </div>
+                <p className="text-sm font-bold text-neutral-800 uppercase tracking-tight">Belum ada notifikasi baru</p>
+                <p className="text-xs text-neutral-500 mt-1">Kami akan mengabari Anda jika ada pembaruan sistem atau data.</p>
+              </div>
+            </div>
+            <div className="p-2 bg-neutral-50/50 border-t border-neutral-100 text-center">
+              <Button variant="ghost" className="w-full text-[10px] font-black uppercase tracking-widest text-neutral-400 hover:text-primary">
+                Tandai Semua Sudah Dibaca
+              </Button>
+            </div>
+          </DropdownMenuContent>
+        </DropdownMenu>
+
 
         <div className="h-6 w-px bg-neutral-200 mx-1 hidden sm:block" />
 
