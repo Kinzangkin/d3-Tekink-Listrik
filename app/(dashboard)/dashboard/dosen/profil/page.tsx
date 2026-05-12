@@ -28,7 +28,7 @@ export default function DosenProfilPage() {
   const fetchProfile = async () => {
     setIsLoading(true)
     try {
-      const res = await apiGet('/auth/me')
+      const res = await apiGet('/dosen/me')
       if (res?.data?.success) {
         const data = res.data.data
         setDosen(data)

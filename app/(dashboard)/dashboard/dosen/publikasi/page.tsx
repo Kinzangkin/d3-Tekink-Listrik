@@ -41,11 +41,10 @@ export default function DosenPublikasiPage() {
   const fetchData = async () => {
     setIsLoading(true)
     try {
-      const resMe = await apiGet('/auth/me')
+      const resMe = await apiGet('/dosen/me')
       if (resMe?.data?.success) {
-        const userData = resMe.data.data
-        setUser(userData)
-        const resTD = await apiGet(`/tri-dharma?dosen_id=${userData.id}&jenis=Publikasi`)
+        setUser(resMe.data.data)
+        const resTD = await apiGet('/tri-dharma/my?jenis=Publikasi')
         if (resTD?.data?.success) {
           setData(resTD.data.data || [])
         }
@@ -69,7 +68,6 @@ export default function DosenPublikasiPage() {
     try {
       const payload = {
         ...formData,
-        dosen_id: user.id,
         tahun: Number(formData.tahun)
       }
 

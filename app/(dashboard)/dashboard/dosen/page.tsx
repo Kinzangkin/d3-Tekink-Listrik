@@ -22,13 +22,13 @@ export default function DosenOverviewPage() {
       setIsLoading(true)
       try {
         // 1. Fetch Profile
-        const resMe = await apiGet('/auth/me')
+        const resMe = await apiGet('/dosen/me')
         if (resMe?.data?.success && resMe.data.data) {
           const userData = resMe.data.data
           setDosen(userData)
           
-          // 2. Fetch Tri Dharma using the user's ID
-          const resTD = await apiGet(`/tri-dharma?dosen_id=${userData.id}`)
+          // 2. Fetch My Tri Dharma (Automatic based on login)
+          const resTD = await apiGet('/tri-dharma/my')
           if (resTD?.data?.success && resTD.data.data) {
             setTriDharmaList(resTD.data.data)
           } else {

@@ -66,7 +66,7 @@ export function DashboardHeader() {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const res = await apiGet('/auth/me')
+        const res = await apiGet('/dosen/me')
         if (res && res.data && res.data.success) {
           const userData = res.data.data
           setUserState({
