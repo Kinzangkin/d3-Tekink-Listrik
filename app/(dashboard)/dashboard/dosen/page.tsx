@@ -23,18 +23,24 @@ export default function DosenOverviewPage() {
       try {
         // 1. Fetch Profile
         const resMe = await apiGet('/auth/me')
-        if (resMe?.data?.success) {
+        if (resMe?.data?.success && resMe.data.data) {
           const userData = resMe.data.data
           setDosen(userData)
           
           // 2. Fetch Tri Dharma using the user's ID
           const resTD = await apiGet(`/tri-dharma?dosen_id=${userData.id}`)
-          if (resTD?.data?.success) {
-            setTriDharmaList(resTD.data.data || [])
+          if (resTD?.data?.success && resTD.data.data) {
+            setTriDharmaList(resTD.data.data)
+          } else {
+            setTriDharmaList([])
           }
+        } else {
+          console.error("Failed to fetch profile or success is false", resMe?.data)
+          setDosen(null)
         }
       } catch (err) {
         console.error("Gagal mengambil data overview", err)
+        setDosen(null)
       } finally {
         setIsLoading(false)
       }
@@ -51,17 +57,31 @@ export default function DosenOverviewPage() {
     )
   }
 
-  if (!dosen) return null
+  if (!dosen && !isLoading) {
+    return (
+      <div className="min-h-[60vh] flex flex-col items-center justify-center space-y-4 text-center">
+        <div className="w-16 h-16 rounded-2xl bg-rose-50 text-rose-500 flex items-center justify-center mb-2">
+          <Users size={32} />
+        </div>
+        <h3 className="font-black text-neutral-800 uppercase tracking-tight">Sesi Berakhir</h3>
+        <p className="text-neutral-500 text-sm max-w-xs font-medium">Gagal mengambil data profil Anda. Silakan coba login kembali untuk memperbarui sesi.</p>
+        <Link href="/login" className="px-6 py-2 bg-primary text-white font-bold rounded-xl text-xs uppercase tracking-widest hover:bg-primary/90 transition-all">
+          Kembali ke Login
+        </Link>
+      </div>
+    )
+  }
 
   // Calculate stats
-  const countPublikasi = triDharmaList.filter(t => t.jenis === "Publikasi" || t.jenis === "Penelitian").length
-  const countPenelitian = triDharmaList.filter(t => t.jenis === "Penelitian").length
-  const countPengabdian = triDharmaList.filter(t => t.jenis === "Pengabdian").length
-  const countHKI = triDharmaList.filter(t => t.jenis === "HKI" || t.jenis === "Paten").length
+  const list = Array.isArray(triDharmaList) ? triDharmaList : []
+  const countPublikasi = list.filter(t => t.jenis === "Publikasi" || t.jenis === "Penelitian").length
+  const countPenelitian = list.filter(t => t.jenis === "Penelitian").length
+  const countPengabdian = list.filter(t => t.jenis === "Pengabdian").length
+  const countHKI = list.filter(t => t.jenis === "HKI" || t.jenis === "Paten").length
 
-  const lastPublikasi = triDharmaList
+  const lastPublikasi = list
     .filter(t => t.jenis === "Publikasi" || t.jenis === "Penelitian")
-    .sort((a, b) => b.tahun - a.tahun)
+    .sort((a, b) => (b.tahun || 0) - (a.tahun || 0))
     .slice(0, 3)
 
 
