@@ -3,13 +3,67 @@
 import { PageHeader } from "@/components/dashboard/PageHeader"
 import { StatCard } from "@/components/dashboard/StatCard"
 import { BookOpen, FileText, Users, Award, ExternalLink } from "lucide-react"
-import { mockPublikasi, mockDosen } from "@/lib/mock-data"
+
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
 
+import { useEffect, useState } from "react"
+import { apiGet } from "@/services/api"
+import { Loader2 } from "lucide-react"
+
 export default function DosenOverviewPage() {
-  const dosen = mockDosen[0] // Mock current user
+  const [dosen, setDosen] = useState<any>(null)
+  const [triDharmaList, setTriDharmaList] = useState<any[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setIsLoading(true)
+      try {
+        // 1. Fetch Profile
+        const resMe = await apiGet('/auth/me')
+        if (resMe?.data?.success) {
+          const userData = resMe.data.data
+          setDosen(userData)
+          
+          // 2. Fetch Tri Dharma using the user's ID
+          const resTD = await apiGet(`/tri-dharma?dosen_id=${userData.id}`)
+          if (resTD?.data?.success) {
+            setTriDharmaList(resTD.data.data || [])
+          }
+        }
+      } catch (err) {
+        console.error("Gagal mengambil data overview", err)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    fetchData()
+  }, [])
+
+  if (isLoading) {
+    return (
+      <div className="min-h-[60vh] flex flex-col items-center justify-center space-y-4">
+        <Loader2 className="w-12 h-12 text-primary animate-spin" />
+        <p className="text-neutral-500 font-black animate-pulse uppercase tracking-widest text-xs">Menyusun Data Anda...</p>
+      </div>
+    )
+  }
+
+  if (!dosen) return null
+
+  // Calculate stats
+  const countPublikasi = triDharmaList.filter(t => t.jenis === "Publikasi" || t.jenis === "Penelitian").length
+  const countPenelitian = triDharmaList.filter(t => t.jenis === "Penelitian").length
+  const countPengabdian = triDharmaList.filter(t => t.jenis === "Pengabdian").length
+  const countHKI = triDharmaList.filter(t => t.jenis === "HKI" || t.jenis === "Paten").length
+
+  const lastPublikasi = triDharmaList
+    .filter(t => t.jenis === "Publikasi" || t.jenis === "Penelitian")
+    .sort((a, b) => b.tahun - a.tahun)
+    .slice(0, 3)
+
 
   return (
     <div className="space-y-6">
@@ -24,22 +78,30 @@ export default function DosenOverviewPage() {
             <div className="absolute top-0 left-0 w-full h-24 bg-primary/10" />
             
             <Avatar className="w-24 h-24 border-4 border-white shadow-md relative z-10 mt-6 mb-4">
-              <AvatarImage src={dosen.foto_url || undefined} />
+              <AvatarImage src={dosen.foto_url || dosen.fotoUrl || undefined} className="object-cover" />
               <AvatarFallback className="text-2xl bg-primary text-white">
-                {dosen.nama.substring(0, 2)}
+                {dosen.nama?.substring(0, 2) || "DS"}
               </AvatarFallback>
             </Avatar>
+
             
-            <h3 className="font-black text-neutral-800 text-lg">{dosen.nama}</h3>
-            <p className="text-sm font-medium text-neutral-500 mb-4">{dosen.jabatan_fungsional} - {dosen.pangkat_golongan}</p>
+            <h3 className="font-black text-neutral-800 text-lg uppercase tracking-tight">{dosen.nama}</h3>
+            <p className="text-[10px] font-black text-neutral-400 uppercase tracking-widest mb-4">
+              {dosen.jabatan_fungsional || dosen.jabatanFungsional || "Dosen"} 
+              {dosen.pangkat_golongan ? ` - ${dosen.pangkat_golongan}` : ""}
+            </p>
+
             
             <div className="flex flex-wrap justify-center gap-1 mb-6">
-              {dosen.keahlian.map(k => (
-                <Badge key={k.id} variant="secondary" className="text-[10px] font-bold">
-                  {k.nama_keahlian}
+              {dosen.keahlian && Array.isArray(dosen.keahlian) ? dosen.keahlian.map((k: any, i: number) => (
+                <Badge key={i} variant="secondary" className="text-[9px] font-black uppercase tracking-tighter px-2">
+                  {typeof k === 'string' ? k : k.nama_keahlian}
                 </Badge>
-              ))}
+              )) : (
+                <p className="text-[10px] text-neutral-400 italic">Belum ada data keahlian</p>
+              )}
             </div>
+
 
             <div className="w-full space-y-2 mt-auto text-sm text-neutral-600">
               <div className="flex justify-between py-2 border-b border-neutral-50">
@@ -58,28 +120,29 @@ export default function DosenOverviewPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <StatCard 
               title="Publikasi" 
-              value="12" 
+              value={countPublikasi.toString()} 
               icon={<BookOpen size={20} />} 
               description="Jurnal & Konferensi"
             />
             <StatCard 
               title="Penelitian" 
-              value="4" 
+              value={countPenelitian.toString()} 
               icon={<FileText size={20} />} 
               description="Riset aktif & selesai"
             />
             <StatCard 
               title="Pengabdian" 
-              value="3" 
+              value={countPengabdian.toString()} 
               icon={<Users size={20} />} 
               description="Kegiatan pengabdian"
             />
             <StatCard 
               title="HKI & Paten" 
-              value="2" 
+              value={countHKI.toString()} 
               icon={<Award size={20} />} 
               description="Hak Kekayaan Intelektual"
             />
+
           </div>
 
           <div className="bg-white rounded-3xl p-6 shadow-sm border border-neutral-100">
@@ -91,16 +154,21 @@ export default function DosenOverviewPage() {
             </div>
             
             <div className="space-y-4">
-              {mockPublikasi.slice(0, 3).map((pub) => (
+              {lastPublikasi.length > 0 ? lastPublikasi.map((pub) => (
                 <div key={pub.id} className="flex flex-col gap-1 p-4 rounded-2xl bg-neutral-50 border border-neutral-100 hover:border-primary/20 transition-colors">
                   <div className="flex justify-between items-start gap-4">
                     <span className="font-bold text-neutral-800 line-clamp-2">{pub.judul}</span>
-                    <Badge variant="outline" className="shrink-0 text-[10px]">{pub.tahun}</Badge>
+                    <Badge variant="outline" className="shrink-0 text-[10px] font-black">{pub.tahun}</Badge>
                   </div>
-                  <span className="text-xs text-neutral-500">{pub.nama_jurnal_konferensi}</span>
+                  <span className="text-[10px] font-black uppercase text-neutral-400 tracking-widest">{pub.jenis}</span>
                 </div>
-              ))}
+              )) : (
+                <div className="text-center py-10">
+                  <p className="text-xs text-neutral-400 italic">Belum ada riwayat publikasi.</p>
+                </div>
+              )}
             </div>
+
           </div>
         </div>
       </div>
