@@ -1,6 +1,8 @@
 "use client"
 
 import { Bell, Search } from "lucide-react"
+import { apiGet } from "@/services/api"
+
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -30,14 +32,37 @@ export function DashboardHeader() {
   })
 
   useEffect(() => {
-    const role = localStorage.getItem("role") || pathRole
-    const email = localStorage.getItem("email") || (role === "admin" ? "admin@polimdo.ac.id" : "dosen@polimdo.ac.id")
-    setUserState({
-      role,
-      email,
-      name: role === "admin" ? "Administrator" : "Dosen"
-    })
+    const fetchUser = async () => {
+      try {
+        const res = await apiGet('/auth/me')
+        if (res && res.data && res.data.success) {
+          const userData = res.data.data
+          setUserState({
+            role: userData.role?.toLowerCase() || pathRole,
+            email: userData.email || "",
+            name: userData.nama || userData.name || (pathRole === "admin" ? "Administrator" : "Dosen")
+          })
+          
+          // Sync localStorage
+          localStorage.setItem('role', userData.role?.toLowerCase() || pathRole)
+          localStorage.setItem('email', userData.email || "")
+        }
+      } catch (err) {
+        console.error("Failed to fetch user data", err)
+        // Fallback to localStorage if API fails
+        const role = localStorage.getItem("role") || pathRole
+        const email = localStorage.getItem("email") || ""
+        setUserState(prev => ({
+          ...prev,
+          role,
+          email
+        }))
+      }
+    }
+
+    fetchUser()
   }, [pathRole])
+
 
   const handleLogout = () => {
     localStorage.removeItem("token")
@@ -81,9 +106,14 @@ export function DashboardHeader() {
         <DropdownMenu>
           <DropdownMenuTrigger className="relative h-9 rounded-full pl-2 pr-4 gap-2 hidden sm:flex bg-neutral-50 hover:bg-neutral-100 border border-neutral-100 items-center">
             <Avatar className="h-6 w-6">
-              <AvatarImage src={userState.role === "admin" ? "https://i.pravatar.cc/150?u=admin" : "https://i.pravatar.cc/150?u=dosen"} alt="@user" />
+              <AvatarImage 
+                src={userState.role === "admin" ? "/Logo_Politeknik_Negeri_Manado.svg" : "https://i.pravatar.cc/150?u=dosen"} 
+                alt="@user" 
+                className="object-contain"
+              />
               <AvatarFallback className="bg-primary text-white text-[10px]">{userState.role === "admin" ? "AD" : "DS"}</AvatarFallback>
             </Avatar>
+
             <span className="text-xs font-bold text-neutral-700">{userState.role === "admin" ? "Admin" : "Dosen"}</span>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-56 rounded-2xl" align="end">
@@ -107,9 +137,14 @@ export function DashboardHeader() {
 
         {/* Mobile Avatar only */}
         <Avatar className="h-8 w-8 sm:hidden">
-          <AvatarImage src={userState.role === "admin" ? "https://i.pravatar.cc/150?u=admin" : "https://i.pravatar.cc/150?u=dosen"} alt="@user" />
+          <AvatarImage 
+            src={userState.role === "admin" ? "/Logo_Politeknik_Negeri_Manado.svg" : "https://i.pravatar.cc/150?u=dosen"} 
+            alt="@user" 
+            className="object-contain"
+          />
           <AvatarFallback className="bg-primary text-white text-[10px]">{userState.role === "admin" ? "AD" : "DS"}</AvatarFallback>
         </Avatar>
+
       </div>
     </header>
   )

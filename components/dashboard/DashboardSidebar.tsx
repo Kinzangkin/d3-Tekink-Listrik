@@ -17,6 +17,8 @@ import {
   Settings,
   ChevronRight
 } from "lucide-react"
+import { apiGet } from "@/services/api"
+
 
 import {
   Sidebar,
@@ -138,10 +140,34 @@ export function DashboardSidebar({ role: propRole }: DashboardSidebarProps) {
     },
   ]
 
-  const menuItems = role === "admin" ? adminMenu : dosenMenu
+  const [userState, setUserState] = React.useState({
+    name: role === "admin" ? "Administrator" : "Dosen",
+    role: role,
+    foto: role === "admin" ? "/Logo_Politeknik_Negeri_Manado.svg" : ""
+  })
+
+  React.useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const res = await apiGet('/auth/me')
+        if (res && res.data && res.data.success) {
+          const userData = res.data.data
+          setUserState({
+            name: userData.nama || userData.name || (role === "admin" ? "Administrator" : "Dosen"),
+            role: userData.role?.toLowerCase() || role,
+            foto: role === "admin" ? "/Logo_Politeknik_Negeri_Manado.svg" : (userData.foto_url || userData.fotoUrl || "")
+          })
+        }
+      } catch (err) {
+        console.error("Failed to fetch user in sidebar", err)
+      }
+    }
+    fetchUser()
+  }, [role])
 
   return (
     <Sidebar collapsible="icon" className="border-r-0 shadow-lg" variant="sidebar">
+
       <SidebarHeader className="h-16 flex items-center justify-center px-4 py-4">
         {isCollapsed ? (
           <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white font-black text-xs">
@@ -191,21 +217,26 @@ export function DashboardSidebar({ role: propRole }: DashboardSidebarProps) {
       <SidebarFooter className="p-4 border-t border-sidebar-border">
         <div className="flex items-center gap-3">
           <Avatar className="w-9 h-9 border border-sidebar-border shadow-sm">
-            <AvatarImage src={role === "admin" ? "https://i.pravatar.cc/150?u=admin" : "https://i.pravatar.cc/150?u=dosen"} />
+            <AvatarImage 
+              src={userState.foto || (userState.role === "admin" ? "/Logo_Politeknik_Negeri_Manado.svg" : "https://i.pravatar.cc/150?u=dosen")} 
+              className="object-contain"
+            />
             <AvatarFallback className="bg-primary/10 text-primary font-black text-xs">
-              {role === "admin" ? "AD" : "DS"}
+              {userState.role === "admin" ? "AD" : "DS"}
             </AvatarFallback>
           </Avatar>
+
           {!isCollapsed && (
             <div className="flex flex-col flex-1 truncate">
               <span className="text-sm font-bold text-sidebar-foreground truncate">
-                {role === "admin" ? "Administrator" : "Dr. Budi Santoso"}
+                {userState.name}
               </span>
               <span className="text-[10px] font-bold text-sidebar-foreground/50 uppercase tracking-widest">
-                {role === "admin" ? "Admin" : "Dosen"}
+                {userState.role === "admin" ? "Admin" : "Dosen"}
               </span>
             </div>
           )}
+
         </div>
       </SidebarFooter>
     </Sidebar>
