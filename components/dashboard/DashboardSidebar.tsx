@@ -164,6 +164,7 @@ export function DashboardSidebar({ role: propRole }: DashboardSidebarProps) {
     }
     fetchUser()
   }, [role])
+  const menuItems = role === "admin" ? adminMenu : dosenMenu
 
   return (
     <Sidebar collapsible="icon" className="border-r-0 shadow-lg" variant="sidebar">
