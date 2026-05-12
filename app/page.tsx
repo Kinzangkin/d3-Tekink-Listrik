@@ -39,22 +39,6 @@ export default function Home() {
       <BeritaSection />
       <AkademikSection />
 
-      {/* Final CTA Section */}
-      <section className="pt-32 pb-24 text-center bg-linear-to-b from-white to-neutral-50 px-4">
-        <h3 className="text-primary font-bold tracking-[0.2em] text-sm md:text-base mb-4 uppercase">
-          PROSES PENDAFTARAN
-        </h3>
-        <h2 className="text-4xl md:text-5xl lg:text-6xl font-black text-neutral-800 uppercase tracking-tight mb-8 max-w-4xl mx-auto leading-tight">
-          AMBIL LANGKAH PERTAMA MENUJU MASA DEPAN CERAHMU
-        </h2>
-        <p className="text-neutral-500 max-w-2xl mx-auto mb-10 text-lg">
-          Jangan lewatkan kesempatan untuk bergabung bersama ribuan mahasiswa terbaik. Pendaftaran mahasiswa baru segera dibuka.
-        </p>
-        <Button size="lg" className="h-14 px-10 text-lg font-bold tracking-widest hover:scale-105 transition-transform">
-          DAFTAR SEKARANG
-        </Button>
-      </section>
-
       <Footer />
     </main>
   )
