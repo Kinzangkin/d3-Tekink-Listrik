@@ -126,12 +126,15 @@ export default function DosenTriDharmaPage() {
         />
 
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button className="bg-primary hover:bg-primary/90 text-white font-bold h-12 rounded-xl px-6 shadow-lg shadow-primary/20">
-              <Plus className="mr-2 h-5 w-5" />
-              Tambah Data
-            </Button>
-          </DialogTrigger>
+          <DialogTrigger
+            render={
+              <Button className="bg-primary hover:bg-primary/90 text-white font-bold h-12 rounded-xl px-6 shadow-lg shadow-primary/20">
+                <Plus className="mr-2 h-5 w-5" />
+                Tambah Data
+              </Button>
+            }
+          />
+
           <DialogContent className="sm:max-w-[600px] rounded-3xl">
             <DialogHeader>
               <DialogTitle className="text-2xl font-black text-neutral-800">Tambah Data Baru</DialogTitle>
@@ -204,9 +207,10 @@ export default function DosenTriDharmaPage() {
                 </div>
               </div>
               <DialogFooter>
-                <DialogClose asChild>
-                  <Button type="button" variant="outline" className="h-12 rounded-xl font-bold">Batal</Button>
+                <DialogClose render={<Button type="button" variant="outline" className="h-12 rounded-xl font-bold" />}>
+                  Batal
                 </DialogClose>
+
                 <Button type="submit" disabled={isSubmitting} className="h-12 rounded-xl font-bold bg-primary hover:bg-primary/90 text-white px-8">
                   {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : "Simpan Data"}
                 </Button>
@@ -272,13 +276,17 @@ export default function DosenTriDharmaPage() {
                       </div>
                       <div className="flex items-center gap-2 shrink-0 sm:self-center self-end">
                         {item.file_url && (
-                          <Button variant="outline" size="sm" className="h-9 rounded-lg font-bold border-neutral-200 hover:border-primary hover:text-primary" asChild>
-                            <a href={item.file_url} target="_blank" rel="noopener noreferrer">
-                              <ExternalLink className="w-4 h-4 mr-2" />
-                              Dokumen
-                            </a>
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="h-9 rounded-lg font-bold border-neutral-200 hover:border-primary hover:text-primary" 
+                            render={<a href={item.file_url} target="_blank" rel="noopener noreferrer" />}
+                          >
+                            <ExternalLink className="w-4 h-4 mr-2" />
+                            Dokumen
                           </Button>
                         )}
+
                         <Button 
                           variant="ghost" 
                           size="icon" 
