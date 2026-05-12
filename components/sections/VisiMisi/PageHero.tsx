@@ -10,7 +10,7 @@ interface PageHeroProps {
 }
 
 
-export function PageHero({ title, subtitle, description, bgImage }: PageHeroProps) {
+export function PageHero({ title, subtitle, description, bgImage = "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80" }: PageHeroProps) {
   return (
     <section className="relative w-full pt-32 pb-20 bg-[#0f172a] overflow-hidden">
       {/* Background Image & Overlay */}
@@ -21,9 +21,10 @@ export function PageHero({ title, subtitle, description, bgImage }: PageHeroProp
             alt="Background" 
             className="w-full h-full object-cover opacity-40"
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-[#0f172a]/80 via-[#0f172a]/90 to-[#0f172a]" />
+          <div className="absolute inset-0 bg-linear-to-b from-[#0f172a]/80 via-[#0f172a]/90 to-[#0f172a]" />
         </div>
       )}
+
 
       {/* Background pattern */}
       <div className="absolute inset-0 opacity-10 z-0">

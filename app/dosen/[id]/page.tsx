@@ -125,12 +125,13 @@ export default function DosenDetailPage() {
         {/* Background Image & Overlay */}
         <div className="absolute inset-0 z-0">
           <img 
-            src="/img/hero-bg.png" 
+            src="https://images.unsplash.com/photo-1541339907198-e08756dedf3f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80" 
             alt="Background" 
             className="w-full h-full object-cover opacity-30"
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-[#0f172a]/80 via-[#0f172a]/90 to-[#0f172a]" />
+          <div className="absolute inset-0 bg-linear-to-b from-[#0f172a]/80 via-[#0f172a]/90 to-[#0f172a]" />
         </div>
+
         
         <div className="absolute top-0 right-0 w-1/2 h-full bg-white/5 skew-x-12 transform origin-top-right z-10" />
         <div className="container mx-auto px-4 relative z-20">
