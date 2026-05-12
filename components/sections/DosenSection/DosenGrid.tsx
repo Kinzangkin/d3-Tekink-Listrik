@@ -12,11 +12,15 @@ export interface Dosen {
   nama: string
   nidn: string
   jabatanFungsional?: string
+  jabatan_fungsional?: string
   keahlian: string[]
-  foto_url: string
+  foto_url?: string
+  fotoUrl?: string
   email: string
   status: "Aktif" | "Tugas Belajar" | string
 }
+
+
 
 export function DosenGrid() {
   const [searchQuery, setSearchQuery] = useState("")
@@ -87,12 +91,14 @@ export function DosenGrid() {
               index={index} 
               nama={dosen.nama}
               nip={dosen.nidn}
-              jabatan={dosen.jabatanFungsional || "Dosen"}
+              jabatan={dosen.jabatanFungsional || dosen.jabatan_fungsional || "Dosen"}
               keahlian={dosen.keahlian || []}
-              foto={dosen.foto_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(dosen.nama)}&background=random`}
+
+              foto={dosen.foto_url || dosen.fotoUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(dosen.nama)}&background=random`}
               email={dosen.email}
               status={dosen.status as any}
             />
+
           ))}
         </div>
       ) : (

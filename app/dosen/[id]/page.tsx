@@ -28,12 +28,16 @@ interface DosenDetail {
   id: string
   nama: string
   nidn: string
-  jabatanFungsional: string
+  jabatanFungsional?: string
+  jabatan_fungsional?: string
   keahlian: string[]
-  fotoUrl: string
+  fotoUrl?: string
+  foto_url?: string
   email: string
   status: string
 }
+
+
 
 interface TriDharma {
   id: string
@@ -135,11 +139,12 @@ export default function DosenDetailPage() {
               className="relative w-48 h-64 md:w-56 md:h-72 rounded-3xl overflow-hidden border-4 border-white/20 shadow-2xl bg-neutral-200 shrink-0"
             >
               <Image
-                src={dosen.fotoUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(dosen.nama)}&size=500`}
+                src={dosen.fotoUrl || dosen.foto_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(dosen.nama)}&size=500`}
                 alt={dosen.nama}
                 fill
                 className="object-cover object-top"
               />
+
             </motion.div>
 
             {/* Basic Info */}
@@ -160,8 +165,9 @@ export default function DosenDetailPage() {
                     <HiCheckCircle className="text-green-400" /> NIDN: {dosen.nidn || "-"}
                   </span>
                   <span className="flex items-center gap-2">
-                    <HiAcademicCap className="text-blue-400" /> {dosen.jabatanFungsional || "Dosen"}
+                    <HiAcademicCap className="text-blue-400" /> {dosen.jabatanFungsional || dosen.jabatan_fungsional || "Dosen"}
                   </span>
+
                 </div>
 
                 {/* Social/Contact Quick Links */}
