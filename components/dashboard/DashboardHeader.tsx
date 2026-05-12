@@ -161,12 +161,11 @@ export function DashboardHeader() {
 
       <div className="flex items-center gap-3">
         <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="text-neutral-500 hover:text-primary rounded-full relative">
-              <Bell size={18} />
-              <span className="absolute top-2 right-2 w-2 h-2 bg-rose-500 rounded-full border-2 border-white"></span>
-            </Button>
+          <DropdownMenuTrigger className="h-9 w-9 flex items-center justify-center text-neutral-500 hover:text-primary hover:bg-neutral-100 rounded-full relative transition-colors">
+            <Bell size={18} />
+            <span className="absolute top-2 right-2 w-2 h-2 bg-rose-500 rounded-full border-2 border-white"></span>
           </DropdownMenuTrigger>
+
           <DropdownMenuContent align="end" className="w-80 rounded-3xl p-0 overflow-hidden">
             <div className="p-4 border-b border-neutral-100 bg-neutral-50/50">
               <h4 className="font-black text-sm uppercase tracking-tight text-neutral-800">Notifikasi Terkini</h4>
