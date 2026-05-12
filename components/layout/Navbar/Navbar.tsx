@@ -54,17 +54,51 @@ export function Navbar() {
         {/* Desktop Navigation */}
         <div className="hidden md:flex items-center gap-8">
           <DesktopMenu isScrolled={isScrolled} />
-          <Link
-            href="/login"
-            className={cn(
-              "px-5 py-2 font-bold rounded-md transition-colors",
-              isScrolled 
-                ? "bg-primary text-white hover:bg-primary/90" 
-                : "bg-white/10 text-white hover:bg-white/20 backdrop-blur-sm"
-            )}
-          >
-            MASUK
-          </Link>
+          
+          {(() => {
+            // Client-side session check
+            const [isLoggedIn, setIsLoggedIn] = React.useState(false)
+            const [role, setRole] = React.useState<string | null>(null)
+            
+            React.useEffect(() => {
+              const token = localStorage.getItem('token')
+              const savedRole = localStorage.getItem('role')
+              if (token) {
+                setIsLoggedIn(true)
+                setRole(savedRole)
+              }
+            }, [])
+
+            if (isLoggedIn) {
+              return (
+                <Link
+                  href={role === 'admin' ? "/dashboard/admin" : "/dashboard/dosen"}
+                  className={cn(
+                    "px-5 py-2 font-bold rounded-md transition-colors",
+                    isScrolled 
+                      ? "bg-primary text-white hover:bg-primary/90" 
+                      : "bg-white/10 text-white hover:bg-white/20 backdrop-blur-sm"
+                  )}
+                >
+                  DASHBOARD
+                </Link>
+              )
+            }
+
+            return (
+              <Link
+                href="/login"
+                className={cn(
+                  "px-5 py-2 font-bold rounded-md transition-colors",
+                  isScrolled 
+                    ? "bg-primary text-white hover:bg-primary/90" 
+                    : "bg-white/10 text-white hover:bg-white/20 backdrop-blur-sm"
+                )}
+              >
+                MASUK
+              </Link>
+            )
+          })()}
         </div>
 
         {/* Mobile Navigation */}
