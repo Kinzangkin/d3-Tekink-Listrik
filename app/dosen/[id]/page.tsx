@@ -121,15 +121,26 @@ export default function DosenDetailPage() {
   return (
     <div className="min-h-screen bg-neutral-50 pb-20">
       <Navbar />
-      <div className="bg-primary pt-32 pb-48 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-1/2 h-full bg-white/5 skew-x-12 transform origin-top-right" />
-        <div className="container mx-auto px-4 relative z-10">
+      <div className="bg-[#0f172a] pt-32 pb-48 relative overflow-hidden">
+        {/* Background Image & Overlay */}
+        <div className="absolute inset-0 z-0">
+          <img 
+            src="/img/hero-bg.png" 
+            alt="Background" 
+            className="w-full h-full object-cover opacity-30"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#0f172a]/80 via-[#0f172a]/90 to-[#0f172a]" />
+        </div>
+        
+        <div className="absolute top-0 right-0 w-1/2 h-full bg-white/5 skew-x-12 transform origin-top-right z-10" />
+        <div className="container mx-auto px-4 relative z-20">
           <Link 
             href="/dosen" 
             className="inline-flex items-center gap-2 text-white/70 hover:text-white mb-8 transition-colors text-sm font-bold tracking-widest uppercase"
           >
             <HiArrowLeft /> KEMBALI KE DIREKTORI
           </Link>
+
           
           <div className="flex flex-col md:flex-row items-center md:items-end gap-8 md:gap-12">
             {/* Photo Container */}

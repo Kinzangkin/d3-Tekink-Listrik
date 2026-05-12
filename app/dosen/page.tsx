@@ -13,7 +13,9 @@ export default function DosenPage() {
         title="PROFILE DOSEN"
         subtitle="D3 Teknik Listrik"
         description="Kenali para dosen pengajar berpengalaman yang siap membimbing Anda menuju masa depan cerah di bidang teknik listrik."
+        bgImage="/img/hero-bg.png"
       />
+
 
       {/* Dosen Grid Section */}
       <section className="py-24 bg-white">
