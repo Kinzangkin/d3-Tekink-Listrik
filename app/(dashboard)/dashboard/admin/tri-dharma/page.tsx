@@ -92,8 +92,9 @@ export default function AdminTriDharmaPage() {
     }
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleSubmit = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault()
+
     setIsSubmitting(true)
 
     const payload = new FormData()

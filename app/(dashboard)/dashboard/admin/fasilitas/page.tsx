@@ -61,8 +61,9 @@ export default function AdminFasilitasPage() {
     }
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleSubmit = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault()
+
     if (!formData.judul_fasilitas) {
       alert("Nama fasilitas wajib diisi")
       return

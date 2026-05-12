@@ -67,8 +67,9 @@ export default function AdminJadwalPage() {
     }
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleSubmit = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault()
+
     if (!formData.nama_jadwal || !selectedFile) {
       alert("Nama jadwal dan file wajib diisi")
       return
