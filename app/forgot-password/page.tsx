@@ -23,7 +23,7 @@ export default function ForgotPasswordPage() {
   const handleRequestToken = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!email) return alert("Email harus diisi")
-    
+
     setIsLoading(true)
     try {
       const res = await apiPost('/auth/forgot-password', { email })
@@ -48,7 +48,7 @@ export default function ForgotPasswordPage() {
     if (newPassword !== confirmPassword) {
       return alert("Password baru dan konfirmasi tidak cocok")
     }
-    
+
     setIsLoading(true)
     try {
       const res = await apiPost('/auth/reset-password', { token, new_password: newPassword })
@@ -90,7 +90,7 @@ export default function ForgotPasswordPage() {
       <div className="absolute top-0 -left-4 w-72 h-72 bg-primary/20 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob" />
       <div className="absolute top-0 -right-4 w-72 h-72 bg-blue-500/20 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob animation-delay-2000" />
       <div className="absolute -bottom-8 left-20 w-72 h-72 bg-indigo-500/20 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob animation-delay-4000" />
-      
+
       {/* Grid Pattern */}
       <div className="absolute inset-0 z-0 opacity-10 pointer-events-none" style={{
         backgroundImage: "radial-gradient(circle at 2px 2px, white 1px, transparent 0)",
@@ -104,8 +104,8 @@ export default function ForgotPasswordPage() {
           transition={{ duration: 0.6 }}
           className="w-full max-w-md"
         >
-          <Link 
-            href="/login" 
+          <Link
+            href="/login"
             className="inline-flex items-center gap-2 text-white/50 hover:text-white mb-8 transition-colors text-sm font-medium group"
           >
             <HiArrowLeft className="group-hover:-translate-x-1 transition-transform" />
@@ -122,30 +122,30 @@ export default function ForgotPasswordPage() {
                 {step === 1 ? "Lupa Password" : "Reset Password"}
               </CardTitle>
               <CardDescription className="text-neutral-500 font-medium px-4">
-                {step === 1 
-                  ? "Masukkan email akun Anda untuk menerima kode token reset password." 
+                {step === 1
+                  ? "Masukkan email akun Anda untuk menerima kode token reset password."
                   : "Silakan cek inbox/spam email Anda. Masukkan token yang diterima untuk membuat password baru."}
               </CardDescription>
             </CardHeader>
             <CardContent className="px-8 pb-8">
               <AnimatePresence mode="wait">
                 {step === 1 && (
-                  <motion.form 
+                  <motion.form
                     key="step1"
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: 20 }}
-                    onSubmit={handleRequestToken} 
+                    onSubmit={handleRequestToken}
                     className="space-y-5"
                   >
                     <div className="space-y-2">
                       <Label htmlFor="email" className="text-neutral-700 font-bold text-xs uppercase tracking-widest">Email Anda</Label>
                       <div className="relative">
                         <HiMail className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" size={18} />
-                        <Input 
-                          id="email" 
-                          placeholder="dosen@polimdo.ac.id" 
-                          type="email" 
+                        <Input
+                          id="email"
+                          placeholder="dosen@polimdo.ac.id"
+                          type="email"
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
                           disabled={isLoading}
@@ -166,17 +166,17 @@ export default function ForgotPasswordPage() {
                 )}
 
                 {step === 2 && (
-                  <motion.form 
+                  <motion.form
                     key="step2"
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: 20 }}
-                    onSubmit={handleResetPassword} 
+                    onSubmit={handleResetPassword}
                     className="space-y-5"
                   >
                     <div className="bg-blue-50 border border-blue-200 p-4 rounded-xl mb-4">
                       <p className="text-xs text-blue-800 font-medium text-center">
-                        Token telah dikirim ke <strong>{email}</strong>.<br/>
+                        Token telah dikirim ke <strong>{email}</strong>.<br />
                         Pastikan untuk memeriksa folder Spam jika tidak ada di Inbox.
                       </p>
                     </div>
@@ -185,10 +185,10 @@ export default function ForgotPasswordPage() {
                       <Label htmlFor="token" className="text-neutral-700 font-bold text-xs uppercase tracking-widest">Token Reset</Label>
                       <div className="relative">
                         <HiKey className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" size={18} />
-                        <Input 
-                          id="token" 
-                          placeholder="Masukkan token dari email" 
-                          type="text" 
+                        <Input
+                          id="token"
+                          placeholder="Masukkan token dari email"
+                          type="text"
                           value={token}
                           onChange={(e) => setToken(e.target.value)}
                           disabled={isLoading}
@@ -202,10 +202,10 @@ export default function ForgotPasswordPage() {
                       <Label htmlFor="newPassword" className="text-neutral-700 font-bold text-xs uppercase tracking-widest">Password Baru</Label>
                       <div className="relative">
                         <HiLockClosed className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" size={18} />
-                        <Input 
-                          id="newPassword" 
-                          placeholder="••••••••" 
-                          type="password" 
+                        <Input
+                          id="newPassword"
+                          placeholder="••••••••"
+                          type="password"
                           value={newPassword}
                           onChange={(e) => setNewPassword(e.target.value)}
                           disabled={isLoading}
@@ -219,10 +219,10 @@ export default function ForgotPasswordPage() {
                       <Label htmlFor="confirmPassword" className="text-neutral-700 font-bold text-xs uppercase tracking-widest">Konfirmasi Password</Label>
                       <div className="relative">
                         <HiLockClosed className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" size={18} />
-                        <Input 
-                          id="confirmPassword" 
-                          placeholder="••••••••" 
-                          type="password" 
+                        <Input
+                          id="confirmPassword"
+                          placeholder="••••••••"
+                          type="password"
                           value={confirmPassword}
                           onChange={(e) => setConfirmPassword(e.target.value)}
                           disabled={isLoading}
@@ -242,8 +242,8 @@ export default function ForgotPasswordPage() {
                     </Button>
 
                     <div className="pt-2 text-center">
-                      <button 
-                        type="button" 
+                      <button
+                        type="button"
                         onClick={handleResendToken}
                         disabled={isLoading}
                         className="text-xs font-bold text-primary hover:underline"
@@ -256,7 +256,7 @@ export default function ForgotPasswordPage() {
               </AnimatePresence>
             </CardContent>
           </Card>
-          
+
           <p className="text-center mt-8 text-white/30 text-[10px] font-bold tracking-[0.2em] uppercase">
             &copy; 2026 D3 Teknik Listrik - Politeknik Negeri Manado
           </p>
