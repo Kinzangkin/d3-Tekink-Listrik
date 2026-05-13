@@ -68,7 +68,7 @@ export default function DosenProfilPage() {
         payload.append("file", selectedFile)
       }
 
-      const res = await apiPut(`/dosen/${dosen.id}`, payload, true)
+      const res = await apiPut('/dosen/me', payload, true)
       if (res?.data?.success) {
         alert("Profil berhasil diperbarui")
         fetchProfile()

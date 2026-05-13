@@ -143,7 +143,7 @@ export function DashboardSidebar({ role: propRole }: DashboardSidebarProps) {
   const [userState, setUserState] = React.useState({
     name: role === "admin" ? "Administrator" : "Dosen",
     role: role,
-    foto: role === "admin" ? "/Logo_Politeknik_Negeri_Manado.svg" : ""
+    foto: role === "admin" ? "/img/Logo_Politeknik_Negeri_Manado.png" : ""
   })
 
   React.useEffect(() => {
@@ -155,7 +155,7 @@ export function DashboardSidebar({ role: propRole }: DashboardSidebarProps) {
           setUserState({
             name: userData.nama || userData.name || (role === "admin" ? "Administrator" : "Dosen"),
             role: userData.role?.toLowerCase() || role,
-            foto: role === "admin" ? "/Logo_Politeknik_Negeri_Manado.svg" : (userData.foto_url || userData.fotoUrl || "")
+            foto: role === "admin" ? "/img/Logo_Politeknik_Negeri_Manado.png" : (userData.foto_url || userData.fotoUrl || "")
           })
         }
       } catch (err) {
@@ -219,11 +219,11 @@ export function DashboardSidebar({ role: propRole }: DashboardSidebarProps) {
         <div className="flex items-center gap-3">
           <Avatar className="w-9 h-9 border border-sidebar-border shadow-sm">
             <AvatarImage 
-              src={userState.foto || (userState.role === "admin" ? "/Logo_Politeknik_Negeri_Manado.svg" : "https://i.pravatar.cc/150?u=dosen")} 
-              className="object-contain"
+              src={userState.foto || undefined} 
+              className="object-cover"
             />
-            <AvatarFallback className="bg-primary/10 text-primary font-black text-xs">
-              {userState.role === "admin" ? "AD" : "DS"}
+            <AvatarFallback className="bg-primary/10 text-primary font-black text-xs uppercase">
+              {userState.name?.substring(0, 2) || "US"}
             </AvatarFallback>
           </Avatar>
 

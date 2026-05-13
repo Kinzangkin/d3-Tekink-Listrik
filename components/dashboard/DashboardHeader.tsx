@@ -28,7 +28,8 @@ export function DashboardHeader() {
   const [userState, setUserState] = useState({
     role: pathRole,
     email: pathRole === "admin" ? "admin@polimdo.ac.id" : "dosen@polimdo.ac.id",
-    name: pathRole === "admin" ? "Administrator" : "Dosen"
+    name: pathRole === "admin" ? "Administrator" : "Dosen",
+    fotoUrl: pathRole === "admin" ? "/img/Logo_Politeknik_Negeri_Manado.png" : ""
   })
 
   const [searchQuery, setSearchQuery] = useState("")
@@ -72,7 +73,8 @@ export function DashboardHeader() {
           setUserState({
             role: userData.role?.toLowerCase() || pathRole,
             email: userData.email || "",
-            name: userData.nama || userData.name || (pathRole === "admin" ? "Administrator" : "Dosen")
+            name: userData.nama || userData.name || (pathRole === "admin" ? "Administrator" : "Dosen"),
+            fotoUrl: pathRole === "admin" ? "/img/Logo_Politeknik_Negeri_Manado.png" : (userData.foto_url || userData.fotoUrl || "")
           })
           
           // Sync localStorage
@@ -94,6 +96,7 @@ export function DashboardHeader() {
 
     fetchUser()
   }, [pathRole])
+
 
 
   const handleLogout = () => {
@@ -194,11 +197,13 @@ export function DashboardHeader() {
           <DropdownMenuTrigger className="relative h-9 rounded-full pl-2 pr-4 gap-2 hidden sm:flex bg-neutral-50 hover:bg-neutral-100 border border-neutral-100 items-center">
             <Avatar className="h-6 w-6">
               <AvatarImage 
-                src={userState.role === "admin" ? "/Logo_Politeknik_Negeri_Manado.svg" : "https://i.pravatar.cc/150?u=dosen"} 
+                src={userState.fotoUrl || undefined} 
                 alt="@user" 
-                className="object-contain"
+                className="object-cover"
               />
-              <AvatarFallback className="bg-primary text-white text-[10px]">{userState.role === "admin" ? "AD" : "DS"}</AvatarFallback>
+              <AvatarFallback className="bg-primary text-white text-[10px] uppercase font-bold">
+                {userState.name?.substring(0, 2) || "US"}
+              </AvatarFallback>
             </Avatar>
 
             <span className="text-xs font-bold text-neutral-700">{userState.role === "admin" ? "Admin" : "Dosen"}</span>
@@ -225,11 +230,13 @@ export function DashboardHeader() {
         {/* Mobile Avatar only */}
         <Avatar className="h-8 w-8 sm:hidden">
           <AvatarImage 
-            src={userState.role === "admin" ? "/Logo_Politeknik_Negeri_Manado.svg" : "https://i.pravatar.cc/150?u=dosen"} 
+            src={userState.fotoUrl || undefined} 
             alt="@user" 
-            className="object-contain"
+            className="object-cover"
           />
-          <AvatarFallback className="bg-primary text-white text-[10px]">{userState.role === "admin" ? "AD" : "DS"}</AvatarFallback>
+          <AvatarFallback className="bg-primary text-white text-[10px] uppercase font-bold">
+            {userState.name?.substring(0, 2) || "US"}
+          </AvatarFallback>
         </Avatar>
 
       </div>
