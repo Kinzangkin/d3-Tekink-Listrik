@@ -108,26 +108,26 @@ export function DashboardSidebar({ role: propRole }: DashboardSidebarProps) {
       url: "/dashboard/dosen/tri-dharma",
       icon: GraduationCap, // Import already available from Admin Menu
     },
-    {
-      title: "Publikasi",
-      url: "/dashboard/dosen/publikasi",
-      icon: BookOpen,
-    },
-    {
-      title: "Penelitian",
-      url: "/dashboard/dosen/penelitian",
-      icon: FileText,
-    },
-    {
-      title: "Pengabdian",
-      url: "/dashboard/dosen/pengabdian",
-      icon: Users,
-    },
-    {
-      title: "Buku Ajar",
-      url: "/dashboard/dosen/buku-ajar",
-      icon: BookOpen,
-    },
+    // {
+    //   title: "Publikasi",
+    //   url: "/dashboard/dosen/publikasi",
+    //   icon: BookOpen,
+    // },
+    // {
+    //   title: "Penelitian",
+    //   url: "/dashboard/dosen/penelitian",
+    //   icon: FileText,
+    // },
+    // {
+    //   title: "Pengabdian",
+    //   url: "/dashboard/dosen/pengabdian",
+    //   icon: Users,
+    // },
+    // {
+    //   title: "Buku Ajar",
+    //   url: "/dashboard/dosen/buku-ajar",
+    //   icon: BookOpen,
+    // },
     /* HKI & Sertifikat dinonaktifkan
     {
       title: "HKI",
