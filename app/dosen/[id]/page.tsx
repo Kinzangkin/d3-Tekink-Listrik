@@ -47,6 +47,7 @@ interface TriDharma {
   deskripsi: string
   tahun: number
   file_url: string
+  anggota?: { dosen_id: string; nama_dosen: string; peran: string }[]
 }
 
 export default function DosenDetailPage() {
@@ -266,6 +267,16 @@ export default function DosenDetailPage() {
                               {pub.deskripsi}
                             </p>
                           )}
+                          {pub.anggota && pub.anggota.length > 0 && (
+                            <div className="flex flex-wrap gap-1.5 mt-2 items-center">
+                              <span className="text-[10px] text-neutral-400 font-bold uppercase tracking-wider mr-1">Tim Anggota:</span>
+                              {pub.anggota.map((ang: any, idxAng: number) => (
+                                <Badge key={idxAng} variant="secondary" className="text-[9px] font-black uppercase tracking-tight py-0.5 px-2 bg-neutral-100 text-neutral-600 border-none">
+                                  {ang.nama_dosen} ({ang.peran})
+                                </Badge>
+                              ))}
+                            </div>
+                          )}
                           {pub.file_url && (
                             <a href={pub.file_url} target="_blank" rel="noreferrer" className="text-xs font-bold text-primary italic hover:underline">
                               Lihat Dokumen
@@ -301,6 +312,16 @@ export default function DosenDetailPage() {
                           {pub.judul}
                         </h4>
                         {pub.deskripsi && <p className="text-sm text-neutral-500 leading-relaxed">{pub.deskripsi}</p>}
+                        {pub.anggota && pub.anggota.length > 0 && (
+                          <div className="flex flex-wrap gap-1.5 mt-2 items-center">
+                            <span className="text-[10px] text-neutral-400 font-bold uppercase tracking-wider mr-1">Tim Anggota:</span>
+                            {pub.anggota.map((ang: any, idxAng: number) => (
+                              <Badge key={idxAng} variant="secondary" className="text-[9px] font-black uppercase tracking-tight py-0.5 px-2 bg-neutral-100 text-neutral-600 border-none">
+                                {ang.nama_dosen} ({ang.peran})
+                              </Badge>
+                            ))}
+                          </div>
+                        )}
                         {pub.file_url && (
                           <div className="pt-2">
                             <a href={pub.file_url} target="_blank" rel="noreferrer" className="text-xs font-bold text-primary italic hover:underline">
