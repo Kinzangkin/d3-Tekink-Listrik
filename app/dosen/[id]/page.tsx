@@ -300,7 +300,14 @@ export default function DosenDetailPage() {
                         <h4 className="text-lg font-bold text-neutral-800 leading-tight group-hover:text-primary transition-colors">
                           {pub.judul}
                         </h4>
-                        {pub.deskripsi && <p className="text-sm text-neutral-500">{pub.deskripsi}</p>}
+                        {pub.deskripsi && <p className="text-sm text-neutral-500 leading-relaxed">{pub.deskripsi}</p>}
+                        {pub.file_url && (
+                          <div className="pt-2">
+                            <a href={pub.file_url} target="_blank" rel="noreferrer" className="text-xs font-bold text-primary italic hover:underline">
+                              Lihat Dokumen
+                            </a>
+                          </div>
+                        )}
                       </div>
                     </CardContent>
                   </Card>
@@ -317,9 +324,28 @@ export default function DosenDetailPage() {
 
               <TabsContent value="buku-ajar" className="mt-0 space-y-6">
                 {bukuAjar.length > 0 ? bukuAjar.map((pub, idx) => (
-                  <Card key={idx} className="border-none shadow-sm rounded-3xl overflow-hidden p-8">
-                     <h4 className="text-lg font-bold text-neutral-800">{pub.judul} ({pub.tahun})</h4>
-                     {pub.deskripsi && <p className="text-sm text-neutral-500 mt-2">{pub.deskripsi}</p>}
+                  <Card key={idx} className="border-none shadow-sm rounded-3xl overflow-hidden group hover:shadow-md transition-all">
+                    <CardContent className="p-8 flex gap-6">
+                      <div className="text-2xl font-black text-neutral-200 group-hover:text-primary/20 transition-colors pt-1">
+                        {pub.tahun}
+                      </div>
+                      <div className="space-y-3">
+                        <Badge variant="outline" className="border-neutral-200 text-neutral-400 text-[10px] font-bold uppercase tracking-widest">
+                          {pub.jenis}
+                        </Badge>
+                        <h4 className="text-lg font-bold text-neutral-800 leading-tight group-hover:text-primary transition-colors">
+                          {pub.judul}
+                        </h4>
+                        {pub.deskripsi && <p className="text-sm text-neutral-500 leading-relaxed">{pub.deskripsi}</p>}
+                        {pub.file_url && (
+                          <div className="pt-2">
+                            <a href={pub.file_url} target="_blank" rel="noreferrer" className="text-xs font-bold text-primary italic hover:underline">
+                              Lihat Buku
+                            </a>
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
                   </Card>
                 )) : (
                   <Card className="border-none shadow-sm rounded-3xl overflow-hidden p-12 text-center bg-white">
