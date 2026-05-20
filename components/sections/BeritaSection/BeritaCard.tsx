@@ -30,6 +30,8 @@ export function BeritaCard({ title, category, image, link }: BeritaCardProps) {
         </h3>
         <Link 
           href={link} 
+          target={link.startsWith("http") ? "_blank" : undefined}
+          rel={link.startsWith("http") ? "noopener noreferrer" : undefined}
           className="text-primary font-bold text-sm uppercase tracking-widest inline-flex items-center gap-2 hover:gap-3 transition-all"
         >
           Baca Selengkapnya <span className="text-lg">→</span>
