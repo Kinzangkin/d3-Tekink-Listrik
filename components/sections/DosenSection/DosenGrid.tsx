@@ -47,7 +47,10 @@ export function DosenGrid() {
     return dosenList.filter((dosen) => {
       const searchLower = searchQuery.toLowerCase()
       const matchName = dosen.nama?.toLowerCase().includes(searchLower) || false
-      const matchExpertise = dosen.keahlian?.some(k => k.toLowerCase().includes(searchLower)) || false
+      const matchExpertise = dosen.keahlian?.some(k => {
+        const text = typeof k === 'string' ? k : (k as any)?.nama_keahlian || ""
+        return text.toLowerCase().includes(searchLower)
+      }) || false
       const matchNip = dosen.nidn?.toLowerCase().includes(searchLower) || false
       return matchName || matchExpertise || matchNip
     })
@@ -92,7 +95,7 @@ export function DosenGrid() {
               nama={dosen.nama}
               nip={dosen.nidn}
               jabatan={dosen.jabatanFungsional || dosen.jabatan_fungsional || "Dosen"}
-              keahlian={dosen.keahlian || []}
+              keahlian={(dosen.keahlian || []).map(k => typeof k === 'string' ? k : (k as any)?.nama_keahlian || "")}
 
               foto={dosen.foto_url || dosen.fotoUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(dosen.nama)}&background=random`}
               email={dosen.email}
