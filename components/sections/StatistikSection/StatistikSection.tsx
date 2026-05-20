@@ -84,7 +84,7 @@ export function StatistikSection() {
               </div>
               <div className="relative h-3/5 w-full rounded-2xl overflow-hidden">
                 <Image 
-                  src="https://images.unsplash.com/photo-1504917595217-d4dc5f566fab?auto=format&fit=crop&w=800&q=80" 
+                  src="https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&q=80" 
                   alt="Campus building" 
                   fill
                   sizes="(max-width: 768px) 100vw, 50vw"
