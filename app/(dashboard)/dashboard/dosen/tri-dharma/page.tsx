@@ -163,7 +163,7 @@ export default function DosenTriDharmaPage() {
             }
           />
 
-          <DialogContent className="sm:max-w-[600px] rounded-3xl">
+          <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto rounded-3xl p-6">
             <DialogHeader>
               <DialogTitle className="text-2xl font-black text-neutral-800">Tambah Data Baru</DialogTitle>
               <DialogDescription>
