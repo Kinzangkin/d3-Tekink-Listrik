@@ -74,13 +74,13 @@ export default function DosenOverviewPage() {
 
   // Calculate stats
   const list = Array.isArray(triDharmaList) ? triDharmaList : []
-  const countPublikasi = list.filter(t => t.jenis === "Publikasi" || t.jenis === "Penelitian").length
+  const countPublikasi = list.filter(t => t.jenis === "Publikasi").length
   const countPenelitian = list.filter(t => t.jenis === "Penelitian").length
   const countPengabdian = list.filter(t => t.jenis === "Pengabdian").length
   const countHKI = list.filter(t => t.jenis === "HKI" || t.jenis === "Paten").length
 
   const lastPublikasi = list
-    .filter(t => t.jenis === "Publikasi" || t.jenis === "Penelitian")
+    .filter(t => t.jenis === "Publikasi")
     .sort((a, b) => (b.tahun || 0) - (a.tahun || 0))
     .slice(0, 3)
 
