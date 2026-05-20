@@ -24,6 +24,37 @@ import {
   HiChevronRight,
   HiOutlineClipboardList
 } from "react-icons/hi"
+// Helper to extract specifications dynamically from description
+function extractSpec(text: string, labelPattern: string, fallback: string): string {
+  if (!text) return fallback
+  
+  // Try pattern like "Kapasitas: 40 Mahasiswa" or "Kapasitas 40"
+  const regexes = [
+    new RegExp(`(?:${labelPattern})\\s*[:=]\\s*([^\\n|.,;]+)`, 'i'),
+    new RegExp(`(?:${labelPattern})\\s+([^\\n|.,;]+)`, 'i')
+  ]
+  
+  for (const regex of regexes) {
+    const match = text.match(regex)
+    if (match && match[1]) {
+      return match[1].trim()
+    }
+  }
+  return fallback
+}
+
+// Helper to extract equipment list from description
+function extractPeralatan(text: string, fallback: string[]): string[] {
+  if (!text) return fallback
+  
+  // Look for "Peralatan:" or similar keyword followed by items
+  const match = text.match(/(?:peralatan|daftar peralatan|alat-alat|alat|dilengkapi dengan)\\s*[:=]?\\s*([^\\n.]+)/i)
+  if (match && match[1]) {
+    const items = match[1].split(/[,;]/).map(item => item.trim()).filter(Boolean)
+    if (items.length > 0) return items
+  }
+  return fallback
+}
 
 export default function FasilitasDetailPage() {
   const params = useParams()
@@ -43,10 +74,11 @@ export default function FasilitasDetailPage() {
           const f = resFasilitas.data.data
           setItem({
             id: f.id,
-            title: f.nama_fasilitas || f.nama,
+            title: f.nama_fasilitas || f.nama || f.judul_fasilitas,
             description: f.deskripsi || "Fasilitas penunjang D3 Teknik Listrik.",
-            image: f.foto_url || f.image_url || "https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?auto=format&fit=crop&w=800&q=80",
-            category: f.kategori || "Fasilitas"
+            image: f.foto_url || f.image_url || (f.media && f.media.length > 0 ? f.media[0].file_url : "https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?auto=format&fit=crop&w=800&q=80"),
+            category: f.kategori || "Fasilitas",
+            media: f.media || []
           })
           setIsLoading(false)
           return
@@ -64,8 +96,9 @@ export default function FasilitasDetailPage() {
             id: fetchedData.id,
             title: fetchedData.judul,
             description: fetchedData.deskripsi || "Penelitian dan Pengabdian Dosen D3 Teknik Listrik.",
-            image: fetchedData.file_url || "https://images.unsplash.com/photo-1532094349884-543bc11b234d?auto=format&fit=crop&w=800&q=80",
-            category: fetchedData.jenis
+            image: fetchedData.file_url || (fetchedData.media && fetchedData.media.length > 0 ? fetchedData.media[0].file_url : "https://images.unsplash.com/photo-1532094349884-543bc11b234d?auto=format&fit=crop&w=800&q=80"),
+            category: fetchedData.jenis,
+            media: fetchedData.media || []
           })
         }
       } catch (e) {
@@ -97,30 +130,29 @@ export default function FasilitasDetailPage() {
     )
   }
 
-  // Mock data for facility details
+  // Extract specs dynamically from database description field, with robust fallbacks
   const spesifikasi = [
-    { label: "Kapasitas", value: "30 Mahasiswa" },
-    { label: "Luas Area", value: "120 m²" },
-    { label: "Standard", value: "ISO 9001:2015" },
-    { label: "Status", value: "Tersertifikasi" },
+    { label: "Kapasitas", value: extractSpec(item.description, "kapasitas", "30 Mahasiswa") },
+    { label: "Luas Area", value: extractSpec(item.description, "luas area|luas", "120 m²") },
+    { label: "Standard", value: extractSpec(item.description, "standard|standar", "ISO 9001:2015") },
+    { label: "Status", value: extractSpec(item.description, "status", "Tersertifikasi") },
   ]
 
-  const peralatan = [
+  // Extract equipment dynamically from database description field, with robust fallbacks
+  const peralatan = extractPeralatan(item.description, [
     "Digital Multimeter (Fluke)",
     "Oscilloscope 100MHz",
     "Kit PLC Schneider TM221",
     "Motor AC 3 Fasa 1.5 HP",
     "Inverter VFD PowerFlex",
     "Powe Quality Analyzer",
-  ]
+  ])
 
-  const galeri = [
-    item.image, // Featured image as first
-    "https://images.unsplash.com/photo-1558444479-c84825d2cf50",
-    "https://images.unsplash.com/photo-1581092918056-0c4c3acd3789",
-    "https://images.unsplash.com/photo-1544724569-5f546fd6f2b5",
-    "https://images.unsplash.com/photo-1504917595217-d4dc5f566fab",
-  ]
+  // Get gallery images dynamically from database media, ensuring featured image is first and no duplicates exist
+  const dbImages = item.media && item.media.length > 0
+    ? item.media.map((m: any) => m.file_url || m.fileUrl)
+    : []
+  const galeri = Array.from(new Set([item.image, ...dbImages])).filter(Boolean) as string[]
 
   const navigateImage = (direction: 'next' | 'prev') => {
     if (selectedImage === null) return
