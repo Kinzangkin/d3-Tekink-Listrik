@@ -147,15 +147,20 @@ export function DashboardSidebar({ role: propRole }: DashboardSidebarProps) {
   })
 
   React.useEffect(() => {
+    if (role === "admin") {
+      // Admin tidak memiliki profil dosen, gunakan default state
+      return
+    }
+
     const fetchUser = async () => {
       try {
         const res = await apiGet('/dosen/me')
         if (res && res.data && res.data.success) {
           const userData = res.data.data
           setUserState({
-            name: userData.nama || userData.name || (role === "admin" ? "Administrator" : "Dosen"),
+            name: userData.nama || userData.name || "Dosen",
             role: userData.role?.toLowerCase() || role,
-            foto: role === "admin" ? "/img/Logo_Politeknik_Negeri_Manado.png" : (userData.foto_url || userData.fotoUrl || "")
+            foto: userData.foto_url || userData.fotoUrl || ""
           })
         }
       } catch (err) {

@@ -65,6 +65,11 @@ export function DashboardHeader() {
 
 
   useEffect(() => {
+    if (pathRole === "admin") {
+      // Admin tidak memiliki profil dosen, gunakan default state
+      return
+    }
+
     const fetchUser = async () => {
       try {
         const res = await apiGet('/dosen/me')
@@ -73,8 +78,8 @@ export function DashboardHeader() {
           setUserState({
             role: userData.role?.toLowerCase() || pathRole,
             email: userData.email || "",
-            name: userData.nama || userData.name || (pathRole === "admin" ? "Administrator" : "Dosen"),
-            fotoUrl: pathRole === "admin" ? "/img/Logo_Politeknik_Negeri_Manado.png" : (userData.foto_url || userData.fotoUrl || "")
+            name: userData.nama || userData.name || "Dosen",
+            fotoUrl: userData.foto_url || userData.fotoUrl || ""
           })
           
           // Sync localStorage
