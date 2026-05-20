@@ -62,7 +62,7 @@ export function FasilitasCard({ item, index }: FasilitasCardProps) {
               {item.description}
             </p>
             <div className="flex items-center gap-2 text-primary font-black text-[10px] tracking-[0.2em] uppercase">
-              Lihat Detail Fasilitas <HiArrowRight />
+              Lihat Detail tri-dharma <HiArrowRight />
             </div>
           </CardContent>
         </Card>
