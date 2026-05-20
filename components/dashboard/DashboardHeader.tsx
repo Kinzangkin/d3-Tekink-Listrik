@@ -232,17 +232,38 @@ export function DashboardHeader() {
           </DropdownMenuContent>
         </DropdownMenu>
 
-        {/* Mobile Avatar only */}
-        <Avatar className="h-8 w-8 sm:hidden">
-          <AvatarImage 
-            src={userState.fotoUrl || undefined} 
-            alt="@user" 
-            className="object-cover"
-          />
-          <AvatarFallback className="bg-primary text-white text-[10px] uppercase font-bold">
-            {userState.name?.substring(0, 2) || "US"}
-          </AvatarFallback>
-        </Avatar>
+        {/* Mobile Avatar with Dropdown */}
+        <DropdownMenu>
+          <DropdownMenuTrigger className="focus:outline-none sm:hidden">
+            <Avatar className="h-8 w-8">
+              <AvatarImage 
+                src={userState.fotoUrl || undefined} 
+                alt="@user" 
+                className="object-cover"
+              />
+              <AvatarFallback className="bg-primary text-white text-[10px] uppercase font-bold">
+                {userState.name?.substring(0, 2) || "US"}
+              </AvatarFallback>
+            </Avatar>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="w-56 rounded-2xl" align="end">
+            <DropdownMenuGroup>
+              <DropdownMenuLabel className="font-normal p-3">
+                <div className="flex flex-col space-y-1">
+                  <p className="text-sm font-bold text-neutral-800">{userState.name}</p>
+                  <p className="text-xs text-neutral-500 font-medium">{userState.email}</p>
+                </div>
+              </DropdownMenuLabel>
+            </DropdownMenuGroup>
+            <DropdownMenuSeparator className="bg-neutral-100" />
+            <DropdownMenuItem onClick={handleProfile} className="p-3 text-xs font-bold uppercase tracking-wider text-neutral-600 focus:bg-neutral-50 focus:text-primary cursor-pointer">
+              Pengaturan Akun
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleLogout} className="p-3 text-xs font-bold uppercase tracking-wider text-rose-500 focus:bg-rose-50 focus:text-rose-600 cursor-pointer">
+              Keluar Sistem
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
 
       </div>
     </header>
