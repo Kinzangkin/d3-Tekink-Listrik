@@ -367,7 +367,7 @@ export default function DosenDetailPage() {
                   <div className="flex flex-wrap gap-2">
                     {dosen.keahlian && dosen.keahlian.length > 0 ? dosen.keahlian.map((tag, i) => (
                       <Badge key={i} className="bg-primary/5 text-primary hover:bg-primary/10 border-none px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider">
-                        {tag}
+                        {typeof tag === 'string' ? tag : (tag as any)?.nama_keahlian || ""}
                       </Badge>
                     )) : (
                       <p className="text-xs text-neutral-400 italic">Belum ada data keahlian</p>
