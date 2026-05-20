@@ -156,12 +156,14 @@ export default function DosenOverviewPage() {
               icon={<Users size={20} />} 
               description="Kegiatan pengabdian"
             />
+            {/* 
             <StatCard 
               title="HKI & Paten" 
               value={countHKI.toString()} 
               icon={<Award size={20} />} 
               description="Hak Kekayaan Intelektual"
             />
+            */}
 
           </div>
 

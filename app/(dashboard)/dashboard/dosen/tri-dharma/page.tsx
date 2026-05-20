@@ -15,7 +15,7 @@ import { apiGet, apiPost, apiDelete } from "@/services/api"
 import { GraduationCap, Plus, FileText, Search, Loader2, Trash2, ExternalLink } from "lucide-react"
 import { format } from "date-fns"
 
-const JENIS_TRI_DHARMA = ["Penelitian", "Pengabdian", "Buku Ajar", "Publikasi", "HKI", "Sertifikat"]
+const JENIS_TRI_DHARMA = ["Penelitian", "Pengabdian", "Buku Ajar", "Publikasi"/*, "HKI", "Sertifikat"*/]
 
 interface TriDharma {
   id: string

@@ -128,6 +128,7 @@ export function DashboardSidebar({ role: propRole }: DashboardSidebarProps) {
       url: "/dashboard/dosen/buku-ajar",
       icon: BookOpen,
     },
+    /* HKI & Sertifikat dinonaktifkan
     {
       title: "HKI",
       url: "/dashboard/dosen/hki",
@@ -138,6 +139,7 @@ export function DashboardSidebar({ role: propRole }: DashboardSidebarProps) {
       url: "/dashboard/dosen/sertifikat",
       icon: Award,
     },
+    */
   ]
 
   const [userState, setUserState] = React.useState({

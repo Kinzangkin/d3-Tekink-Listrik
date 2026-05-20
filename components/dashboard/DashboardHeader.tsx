@@ -54,8 +54,9 @@ export function DashboardHeader() {
     { title: "Penelitian", url: "/dashboard/dosen/penelitian" },
     { title: "Pengabdian", url: "/dashboard/dosen/pengabdian" },
     { title: "Buku Ajar", url: "/dashboard/dosen/buku-ajar" },
-    { title: "HKI", url: "/dashboard/dosen/hki" },
-    { title: "Sertifikat", url: "/dashboard/dosen/sertifikat" },
+    // HKI & Sertifikat dinonaktifkan
+    // { title: "HKI", url: "/dashboard/dosen/hki" },
+    // { title: "Sertifikat", url: "/dashboard/dosen/sertifikat" },
   ]
 
   const menuItems = userState.role === "admin" ? adminMenu : dosenMenu

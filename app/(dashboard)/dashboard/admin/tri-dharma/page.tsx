@@ -253,8 +253,10 @@ export default function AdminTriDharmaPage() {
                   <option value="Pengabdian">Pengabdian</option>
                   <option value="Buku Ajar">Buku Ajar</option>
                   <option value="Publikasi">Publikasi</option>
+                  {/* HKI & Sertifikat dinonaktifkan
                   <option value="HKI">HKI</option>
                   <option value="Sertifikat">Sertifikat</option>
+                  */}
                 </select>
               </div>
               <div className="space-y-2">
