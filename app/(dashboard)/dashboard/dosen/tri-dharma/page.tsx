@@ -25,17 +25,21 @@ interface TriDharma {
   tahun: number
   file_url: string
   created_at: string
+  anggota?: { dosen_id: string; nama_dosen: string; peran: string }[]
 }
 
 export default function DosenTriDharmaPage() {
   const [activeTab, setActiveTab] = useState(JENIS_TRI_DHARMA[0])
   const [data, setData] = useState<TriDharma[]>([])
+  const [dosenList, setDosenList] = useState<any[]>([])
+  const [selectedAnggota, setSelectedAnggota] = useState<string[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
 
   // Form State
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [user, setUser] = useState<any>(null)
   const [formData, setFormData] = useState({
     judul: "",
     tahun: new Date().getFullYear().toString(),
@@ -48,6 +52,24 @@ export default function DosenTriDharmaPage() {
     fetchData(activeTab)
     setFormData(prev => ({ ...prev, jenis: activeTab }))
   }, [activeTab])
+
+  useEffect(() => {
+    const initData = async () => {
+      try {
+        const resMe = await apiGet('/dosen/me')
+        if (resMe?.data?.success) {
+          setUser(resMe.data.data)
+        }
+        const resD = await apiGet('/dosen')
+        if (resD?.data?.success) {
+          setDosenList(resD.data.data || [])
+        }
+      } catch (err) {
+        console.error(err)
+      }
+    }
+    initData()
+  }, [])
 
   const fetchData = async (jenis: string) => {
     setIsLoading(true)
@@ -90,6 +112,11 @@ export default function DosenTriDharmaPage() {
     formPayload.append("tahun", formData.tahun)
     formPayload.append("deskripsi", formData.deskripsi)
     
+    // Add co-authors/members to research
+    if (formData.jenis === "Penelitian" || formData.jenis === "Pengabdian") {
+      formPayload.append("anggota_dosen_ids", selectedAnggota.join(","))
+    }
+    
     if (fileInputRef.current?.files?.[0]) {
       formPayload.append("file", fileInputRef.current.files[0])
     }
@@ -99,6 +126,7 @@ export default function DosenTriDharmaPage() {
       if (res && res.data && res.data.success) {
         setIsDialogOpen(false)
         setFormData({ judul: "", tahun: new Date().getFullYear().toString(), deskripsi: "", jenis: activeTab })
+        setSelectedAnggota([])
         if (fileInputRef.current) fileInputRef.current.value = ""
         fetchData(activeTab)
       } else if (res) {
@@ -125,7 +153,7 @@ export default function DosenTriDharmaPage() {
           icon={<GraduationCap className="text-primary w-8 h-8" />}
         />
 
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <Dialog open={isDialogOpen} onOpenChange={(open) => { setIsDialogOpen(open); if (open) { setSelectedAnggota([]); } }}>
           <DialogTrigger
             render={
               <Button className="bg-primary hover:bg-primary/90 text-white font-bold h-12 rounded-xl px-6 shadow-lg shadow-primary/20">
@@ -182,6 +210,40 @@ export default function DosenTriDharmaPage() {
                     className="h-12 rounded-xl border-neutral-200 focus:border-primary" 
                   />
                 </div>
+
+                {(formData.jenis === "Penelitian" || formData.jenis === "Pengabdian") && (
+                  <div className="space-y-2 col-span-2">
+                    <Label className="text-xs font-bold uppercase text-neutral-500">Anggota Kegiatan (Dosen Lain)</Label>
+                    <div className="border border-neutral-200 rounded-xl p-3 bg-neutral-50 max-h-36 overflow-y-auto space-y-2">
+                      {dosenList
+                        .filter((d: any) => d.id !== user?.id)
+                        .map((d: any) => {
+                          const isChecked = selectedAnggota.includes(d.id)
+                          return (
+                            <label key={d.id} className="flex items-center gap-3 text-sm cursor-pointer select-none">
+                              <input 
+                                type="checkbox" 
+                                checked={isChecked}
+                                onChange={(e) => {
+                                  if (e.target.checked) {
+                                    setSelectedAnggota([...selectedAnggota, d.id])
+                                  } else {
+                                    setSelectedAnggota(selectedAnggota.filter(id => id !== d.id))
+                                  }
+                                }}
+                                className="rounded border-neutral-300 text-primary focus:ring-primary w-4 h-4"
+                              />
+                              <span className="font-semibold text-neutral-700">{d.nama}</span>
+                            </label>
+                          )
+                        })
+                      }
+                      {dosenList.filter((d: any) => d.id !== user?.id).length === 0 && (
+                        <p className="text-xs text-neutral-400 italic">Tidak ada dosen lain tersedia</p>
+                      )}
+                    </div>
+                  </div>
+                )}
 
                 <div className="space-y-2 col-span-2">
                   <Label htmlFor="deskripsi" className="text-xs font-bold text-neutral-500 uppercase">Deskripsi (Opsional)</Label>
@@ -272,6 +334,16 @@ export default function DosenTriDharmaPage() {
                             <Badge variant="secondary" className="font-bold text-[10px] bg-neutral-100">{item.tahun}</Badge>
                             {item.deskripsi && <span className="line-clamp-1">{item.deskripsi}</span>}
                           </div>
+                          {item.anggota && item.anggota.length > 0 && (
+                            <div className="flex flex-wrap gap-1 mt-2 items-center">
+                              <span className="text-[9px] text-neutral-400 font-bold uppercase tracking-wider mr-1">Anggota:</span>
+                              {item.anggota.map((ang: any, i: number) => (
+                                <Badge key={i} variant="secondary" className="text-[9px] font-black uppercase tracking-tight py-0 px-2 bg-neutral-100 text-neutral-600 border-none">
+                                  {ang.nama_dosen} ({ang.peran})
+                                </Badge>
+                              ))}
+                            </div>
+                          )}
                         </div>
                       </div>
                       <div className="flex items-center gap-2 shrink-0 sm:self-center self-end">
