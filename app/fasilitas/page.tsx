@@ -33,7 +33,7 @@ export default function FasilitasPage() {
             id: item.id,
             title: item.judul,
             description: item.deskripsi || "Penelitian dan Pengabdian Dosen D3 Teknik Listrik.",
-            image: item.file_url || "https://images.unsplash.com/photo-1532094349884-543bc11b234d?auto=format&fit=crop&w=800&q=80",
+            image: item.file_url || (item.media && item.media.length > 0 ? item.media[0].file_url : "https://images.unsplash.com/photo-1532094349884-543bc11b234d?auto=format&fit=crop&w=800&q=80"),
             category: item.jenis
           }))
           setDynamicTriDharma(mappedTD)
@@ -42,9 +42,9 @@ export default function FasilitasPage() {
         if (resFasilitas?.data?.success) {
           const mappedFasilitas = resFasilitas.data.data.map((item: any) => ({
             id: item.id,
-            title: item.nama_fasilitas || item.nama,
+            title: item.nama_fasilitas || item.nama || item.judul_fasilitas,
             description: item.deskripsi || "Fasilitas penunjang pendidikan berkualitas.",
-            image: item.foto_url || item.image_url || "https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?auto=format&fit=crop&w=800&q=80",
+            image: item.foto_url || item.image_url || (item.media && item.media.length > 0 ? item.media[0].file_url : "https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?auto=format&fit=crop&w=800&q=80"),
             category: item.kategori || "Fasilitas"
           }))
           setDynamicFasilitas(mappedFasilitas)

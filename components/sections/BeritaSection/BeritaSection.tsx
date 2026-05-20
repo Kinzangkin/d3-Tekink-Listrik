@@ -16,25 +16,25 @@ export function BeritaSection() {
     {
       title: "Sorotan Mahasiswa: Kisah Sukses Lulusan Universitas Unixe",
       category: "BERITA KAMPUS",
-      image: "https://picsum.photos/seed/berita1/800/600",
+      image: "https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=800&q=80",
       link: "#"
     },
     {
       title: "Universitas Unixe: Pusat Inovasi dan Penelitian Terdepan",
       category: "PENELITIAN",
-      image: "https://picsum.photos/seed/berita2/800/600",
+      image: "https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=800&q=80",
       link: "#"
     },
     {
       title: "Menjelajahi Dampak Universitas Unixe terhadap Masyarakat Lokal",
       category: "KOMUNITAS",
-      image: "https://picsum.photos/seed/berita3/800/600",
+      image: "https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=800&q=80",
       link: "#"
     },
     {
       title: "Peresmian Laboratorium Kelistrikan Tingkat Lanjut yang Baru",
       category: "FASILITAS",
-      image: "https://picsum.photos/seed/berita4/800/600",
+      image: "https://images.unsplash.com/photo-1581092921461-eab62e97a780?auto=format&fit=crop&w=800&q=80",
       link: "#"
     }
   ]
