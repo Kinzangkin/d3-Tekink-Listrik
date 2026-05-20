@@ -46,7 +46,9 @@ export default function DosenPengabdianPage() {
         setUser(resMe.data.data)
         const resTD = await apiGet('/tri-dharma/my?jenis=Pengabdian')
         if (resTD?.data?.success) {
-          setData(resTD.data.data || [])
+          const allMyTD = resTD.data.data || []
+          const filtered = allMyTD.filter((item: any) => item.jenis?.trim().toLowerCase() === "pengabdian")
+          setData(filtered)
         }
       }
     } catch (e) {

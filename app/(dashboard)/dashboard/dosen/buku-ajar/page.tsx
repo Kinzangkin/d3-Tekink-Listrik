@@ -46,7 +46,9 @@ export default function DosenBukuAjarPage() {
         setUser(resMe.data.data)
         const resTD = await apiGet('/tri-dharma/my?jenis=Buku Ajar')
         if (resTD?.data?.success) {
-          setData(resTD.data.data || [])
+          const allMyTD = resTD.data.data || []
+          const filtered = allMyTD.filter((item: any) => item.jenis?.trim().toLowerCase() === "buku ajar")
+          setData(filtered)
         }
       }
     } catch (e) {

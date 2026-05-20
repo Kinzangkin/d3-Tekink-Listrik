@@ -67,8 +67,11 @@ export default function DosenDetailPage() {
         // 1. Fetch Dosen Profile
         // Note: Check if backend uses NIP or UUID for this endpoint
         const resDosen = await apiGet(`/dosen/${id}`)
+        let lecturerUuid = id
         if (resDosen && resDosen.data && resDosen.data.success) {
-          setDosen(resDosen.data.data)
+          const dosenData = resDosen.data.data
+          setDosen(dosenData)
+          lecturerUuid = dosenData.id || id
         } else {
           // Fallback or error handling
           setDosen(null)
@@ -76,11 +79,15 @@ export default function DosenDetailPage() {
 
         // 2. Fetch Tri Dharma
         // We pass dosen_id if backend supports it. If it returns all, we filter manually.
-        const resTriDharma = await apiGet(`/tri-dharma?dosen_id=${id}`)
+        const resTriDharma = await apiGet(`/tri-dharma?dosen_id=${lecturerUuid}`)
         if (resTriDharma && resTriDharma.data && resTriDharma.data.success) {
           const allData: TriDharma[] = resTriDharma.data.data || []
-          // Manual filter just in case backend ignores the query param
-          const filtered = allData.filter(item => item.dosen_id === id)
+          // Manual filter check for both root dosen_id and the anggota (members) list
+          const filtered = allData.filter(item => 
+            item.dosen_id === lecturerUuid ||
+            (item as any).dosenId === lecturerUuid ||
+            (item as any).anggota?.some((member: any) => member.dosen_id === lecturerUuid || member.dosenId === lecturerUuid)
+          )
           setTriDharmaList(filtered)
         }
       } catch (error) {
@@ -113,10 +120,13 @@ export default function DosenDetailPage() {
     )
   }
 
-  // Filter tri dharma based on jenis
-  const penelitian = triDharmaList.filter(t => t.jenis === "Penelitian" || t.jenis === "Publikasi")
-  const pengabdian = triDharmaList.filter(t => t.jenis === "Pengabdian")
-  const bukuAjar = triDharmaList.filter(t => t.jenis === "Buku Ajar")
+  // Filter tri dharma based on jenis (case-insensitive and trimmed)
+  const penelitian = triDharmaList.filter(t => {
+    const jenis = t.jenis?.trim().toLowerCase()
+    return jenis === "penelitian" || jenis === "publikasi"
+  })
+  const pengabdian = triDharmaList.filter(t => t.jenis?.trim().toLowerCase() === "pengabdian")
+  const bukuAjar = triDharmaList.filter(t => t.jenis?.trim().toLowerCase() === "buku ajar")
 
   return (
     <div className="min-h-screen bg-neutral-50 pb-20">
