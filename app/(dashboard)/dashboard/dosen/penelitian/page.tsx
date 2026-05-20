@@ -27,6 +27,8 @@ export default function DosenPenelitianPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null)
   
   const [data, setData] = useState<any[]>([])
+  const [dosenList, setDosenList] = useState<any[]>([])
+  const [selectedAnggota, setSelectedAnggota] = useState<string[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [user, setUser] = useState<any>(null)
@@ -36,7 +38,8 @@ export default function DosenPenelitianPage() {
     jenis: "Penelitian",
     deskripsi: "",
     tahun: new Date().getFullYear(),
-    file_url: ""
+    file_url: "",
+    anggota_dosen_ids: ""
   })
 
   const fetchData = async () => {
@@ -45,6 +48,13 @@ export default function DosenPenelitianPage() {
       const resMe = await apiGet('/dosen/me')
       if (resMe?.data?.success) {
         setUser(resMe.data.data)
+        
+        // Fetch all lecturers
+        const resD = await apiGet('/dosen')
+        if (resD?.data?.success) {
+          setDosenList(resD.data.data || [])
+        }
+
         const resTD = await apiGet('/tri-dharma/my?jenis=Penelitian')
         if (resTD?.data?.success) {
           setData(resTD.data.data || [])
@@ -69,7 +79,8 @@ export default function DosenPenelitianPage() {
     try {
       const payload = {
         ...formData,
-        tahun: Number(formData.tahun)
+        tahun: Number(formData.tahun),
+        anggota_dosen_ids: selectedAnggota.join(",")
       }
 
       const res = isEditMode 
@@ -119,7 +130,17 @@ export default function DosenPenelitianPage() {
       cell: (item: any) => (
         <div className="flex flex-col gap-1 max-w-lg">
           <span className="font-bold text-neutral-800 leading-snug">{item.judul}</span>
-          <span className="text-sm text-neutral-500 line-clamp-2 mt-1">{item.deskripsi}</span>
+          <span className="text-xs text-neutral-500 line-clamp-2 mt-1">{item.deskripsi}</span>
+          {item.anggota && item.anggota.length > 0 && (
+            <div className="flex flex-wrap gap-1 mt-2 items-center">
+              <span className="text-[9px] text-neutral-400 font-bold uppercase tracking-wider mr-1">Anggota:</span>
+              {item.anggota.map((ang: any, i: number) => (
+                <Badge key={i} variant="secondary" className="text-[9px] font-black uppercase tracking-tight py-0 px-2 bg-neutral-100 text-neutral-600 border-none">
+                  {ang.nama_dosen} ({ang.peran})
+                </Badge>
+              ))}
+            </div>
+          )}
         </div>
       )
     },
@@ -144,12 +165,22 @@ export default function DosenPenelitianPage() {
               <DropdownMenuItem className="cursor-pointer font-medium text-neutral-600" onClick={() => {
                 setIsEditMode(true)
                 setSelectedId(item.id)
+                
+                // Extract selected members
+                const currentAnggotaIds = item.anggota
+                  ? item.anggota
+                      .filter((a: any) => a.dosen_id !== user?.id)
+                      .map((a: any) => a.dosen_id)
+                  : []
+                setSelectedAnggota(currentAnggotaIds)
+
                 setFormData({
                   judul: item.judul,
                   jenis: item.jenis,
                   deskripsi: item.deskripsi || "",
                   tahun: item.tahun,
-                  file_url: item.file_url || ""
+                  file_url: item.file_url || "",
+                  anggota_dosen_ids: currentAnggotaIds.join(",")
                 })
                 setIsFormOpen(true)
               }}>
@@ -180,13 +211,21 @@ export default function DosenPenelitianPage() {
             isOpen={isFormOpen}
             onOpenChange={setIsFormOpen}
             title={isEditMode ? "Edit Penelitian" : "Tambah Penelitian"}
-            description="Masukkan informasi detail penelitian Anda."
+            description="Masukkan informasi detail penelitian Anda beserta tim anggota dosen lain."
             onSubmit={handleSubmit}
             trigger={
               <Button 
                 onClick={() => {
                   setIsEditMode(false)
-                  setFormData({ judul: "", jenis: "Penelitian", deskripsi: "", tahun: new Date().getFullYear(), file_url: "" })
+                  setSelectedAnggota([])
+                  setFormData({ 
+                    judul: "", 
+                    jenis: "Penelitian", 
+                    deskripsi: "", 
+                    tahun: new Date().getFullYear(), 
+                    file_url: "",
+                    anggota_dosen_ids: "" 
+                  })
                 }}
                 className="bg-primary hover:bg-primary/90 text-white font-bold tracking-wider uppercase text-xs rounded-xl shadow-lg shadow-primary/20 gap-2 h-10 px-4"
               >
@@ -206,6 +245,7 @@ export default function DosenPenelitianPage() {
                   className="rounded-xl bg-neutral-50 border-neutral-200 resize-none h-20" 
                 />
               </div>
+              
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="tahun" className="text-xs font-bold uppercase text-neutral-500">Tahun Pelaksanaan</Label>
@@ -230,6 +270,40 @@ export default function DosenPenelitianPage() {
                   />
                 </div>
               </div>
+
+              {/* Checkboxes selection of co-authors */}
+              <div className="space-y-2">
+                <Label className="text-xs font-bold uppercase text-neutral-500">Anggota Penelitian (Dosen Lain)</Label>
+                <div className="border border-neutral-200 rounded-xl p-3 bg-neutral-50 max-h-40 overflow-y-auto space-y-2">
+                  {dosenList
+                    .filter((d: any) => d.id !== user?.id)
+                    .map((d: any) => {
+                      const isChecked = selectedAnggota.includes(d.id)
+                      return (
+                        <label key={d.id} className="flex items-center gap-3 text-sm cursor-pointer select-none">
+                          <input 
+                            type="checkbox" 
+                            checked={isChecked}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setSelectedAnggota([...selectedAnggota, d.id])
+                              } else {
+                                setSelectedAnggota(selectedAnggota.filter(id => id !== d.id))
+                              }
+                            }}
+                            className="rounded border-neutral-300 text-primary focus:ring-primary w-4 h-4"
+                          />
+                          <span className="font-semibold text-neutral-700">{d.nama}</span>
+                        </label>
+                      )
+                    })
+                  }
+                  {dosenList.filter((d: any) => d.id !== user?.id).length === 0 && (
+                    <p className="text-xs text-neutral-400 italic">Tidak ada dosen lain tersedia</p>
+                  )}
+                </div>
+              </div>
+
               <div className="space-y-2">
                 <Label htmlFor="deskripsi" className="text-xs font-bold uppercase text-neutral-500">Deskripsi Singkat</Label>
                 <Textarea 
