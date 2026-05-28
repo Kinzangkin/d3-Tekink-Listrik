@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useState, useEffect, useCallback } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
@@ -17,13 +17,48 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [rateLimitSeconds, setRateLimitSeconds] = useState(0)
+  const [errorMessage, setErrorMessage] = useState("")
+
+  // Countdown timer for rate limit
+  useEffect(() => {
+    if (rateLimitSeconds <= 0) return
+    const timer = setInterval(() => {
+      setRateLimitSeconds((prev) => {
+        if (prev <= 1) {
+          setErrorMessage("")
+          return 0
+        }
+        return prev - 1
+      })
+    }, 1000)
+    return () => clearInterval(timer)
+  }, [rateLimitSeconds])
+
+  const formatCountdown = useCallback((seconds: number) => {
+    const m = Math.floor(seconds / 60)
+    const s = seconds % 60
+    return `${m}:${s.toString().padStart(2, '0')}`
+  }, [])
+
+  const isRateLimited = rateLimitSeconds > 0
 
   async function onSubmit(event: React.SyntheticEvent) {
     event.preventDefault()
+    if (isRateLimited) return
     setIsLoading(true)
+    setErrorMessage("")
 
     try {
       const res = await apiPost('/auth/login', { email, password })
+
+      // Handle Rate Limit (429)
+      if (res && res.status === 429) {
+        setRateLimitSeconds(300) // 5 menit = 300 detik
+        setErrorMessage("Terlalu banyak percobaan login. Silakan tunggu 5 menit sebelum mencoba lagi.")
+        setIsLoading(false)
+        return
+      }
       
       if (res && res.status === 200 && res.data && res.data.success) {
         const { token, expiresAt, role: responseRole } = res.data.data
@@ -55,11 +90,11 @@ export default function LoginPage() {
           router.push('/dashboard/dosen')
         }
       } else {
-        alert(res?.data?.message || "Email atau password salah.")
+        setErrorMessage(res?.data?.message || "Email atau password salah.")
       }
     } catch (error) {
       console.error("Login error:", error)
-      alert("Gagal terhubung ke server.")
+      setErrorMessage("Gagal terhubung ke server.")
     } finally {
       setIsLoading(false)
     }
@@ -124,6 +159,16 @@ export default function LoginPage() {
             </CardHeader>
             <CardContent className="grid gap-6 px-8">
               <form onSubmit={onSubmit} className="space-y-5" autoComplete="off">
+                {errorMessage && (
+                  <div className={`p-3 rounded-xl text-sm font-medium ${isRateLimited ? 'bg-amber-50 text-amber-700 border border-amber-200' : 'bg-rose-50 text-rose-600 border border-rose-200'}`}>
+                    {errorMessage}
+                    {isRateLimited && (
+                      <div className="mt-1 text-xs font-bold">
+                        Coba lagi dalam: {formatCountdown(rateLimitSeconds)}
+                      </div>
+                    )}
+                  </div>
+                )}
                 <div className="space-y-2">
                   <Label htmlFor="email" className="text-neutral-700 font-bold text-xs uppercase tracking-widest">Email / NIP</Label>
                   <div className="relative">
@@ -137,7 +182,7 @@ export default function LoginPage() {
                       autoCapitalize="none"
                       autoComplete="off"
                       autoCorrect="off"
-                      disabled={isLoading}
+                      disabled={isLoading || isRateLimited}
                       className="pl-10 h-12 border-neutral-200 focus:border-primary focus:ring-1 focus:ring-primary rounded-xl"
                       required
                     />
@@ -157,7 +202,7 @@ export default function LoginPage() {
                       type="password" 
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      disabled={isLoading}
+                      disabled={isLoading || isRateLimited}
                       autoComplete="new-password"
                       placeholder="••••••••"
                       className="pl-10 h-12 border-neutral-200 focus:border-primary focus:ring-1 focus:ring-primary rounded-xl"
@@ -165,12 +210,14 @@ export default function LoginPage() {
                     />
                   </div>
                 </div>
-                <Button type="submit" disabled={isLoading} className="w-full h-12 bg-primary hover:bg-primary/90 text-white font-black tracking-widest rounded-xl shadow-lg shadow-primary/20 transition-all uppercase mt-2">
+                <Button type="submit" disabled={isLoading || isRateLimited} className={`w-full h-12 font-black tracking-widest rounded-xl shadow-lg transition-all uppercase mt-2 ${isRateLimited ? 'bg-amber-500 hover:bg-amber-500 shadow-amber-500/20' : 'bg-primary hover:bg-primary/90 shadow-primary/20'} text-white`}>
                   {isLoading ? (
                     <div className="flex items-center gap-2">
                       <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
                       MEMPROSES...
                     </div>
+                  ) : isRateLimited ? (
+                    `DIBLOKIR — ${formatCountdown(rateLimitSeconds)}`
                   ) : "MASUK KE PORTAL"}
                 </Button>
               </form>

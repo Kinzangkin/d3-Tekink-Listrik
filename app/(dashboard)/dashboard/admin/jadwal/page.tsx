@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Plus, Edit2, Trash2, FileText, Download, Loader2 } from "lucide-react"
-import { apiGet, apiPost, apiDelete } from "@/services/api"
+import { apiGet, apiPost, apiPut, apiDelete } from "@/services/api"
 import { 
   DropdownMenu,
   DropdownMenuContent,
@@ -20,6 +20,7 @@ import { MoreHorizontal } from "lucide-react"
 
 export default function AdminJadwalPage() {
   const [isFormOpen, setIsFormOpen] = useState(false)
+  const [isEditMode, setIsEditMode] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [selectedId, setSelectedId] = useState<string | null>(null)
   
@@ -48,6 +49,13 @@ export default function AdminJadwalPage() {
     fetchData()
   }, [])
 
+  const resetForm = () => {
+    setFormData({ nama_jadwal: "" })
+    setSelectedFile(null)
+    setIsEditMode(false)
+    setSelectedId(null)
+  }
+
   const handleDelete = async () => {
     if (!selectedId) return
     setIsSubmitting(true)
@@ -70,25 +78,35 @@ export default function AdminJadwalPage() {
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault()
 
-    if (!formData.nama_jadwal || !selectedFile) {
-      alert("Nama jadwal dan file wajib diisi")
+    if (!formData.nama_jadwal) {
+      alert("Nama jadwal wajib diisi")
+      return
+    }
+
+    // File wajib hanya saat tambah baru
+    if (!isEditMode && !selectedFile) {
+      alert("File jadwal wajib diunggah")
       return
     }
 
     setIsSubmitting(true)
     const payload = new FormData()
     payload.append("nama_jadwal", formData.nama_jadwal)
-    payload.append("file", selectedFile)
+    if (selectedFile) {
+      payload.append("file", selectedFile)
+    }
 
     try {
-      const res = await apiPost('/jadwal', payload, true)
+      const res = isEditMode
+        ? await apiPut(`/jadwal/${selectedId}`, payload, true)
+        : await apiPost('/jadwal', payload, true)
+
       if (res?.data?.success) {
         setIsFormOpen(false)
-        setFormData({ nama_jadwal: "" })
-        setSelectedFile(null)
+        resetForm()
         fetchData()
       } else {
-        alert(res?.data?.message || "Gagal upload jadwal")
+        alert(res?.data?.message || `Gagal ${isEditMode ? "memperbarui" : "upload"} jadwal`)
       }
     } catch (e) {
       console.error(e)
@@ -139,7 +157,13 @@ export default function AdminJadwalPage() {
               <MoreHorizontal className="h-4 w-4" />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="rounded-xl">
-              <DropdownMenuItem className="cursor-pointer font-medium text-neutral-600" onClick={() => setIsFormOpen(true)}>
+              <DropdownMenuItem className="cursor-pointer font-medium text-neutral-600" onClick={() => {
+                setIsEditMode(true)
+                setSelectedId(item.id)
+                setFormData({ nama_jadwal: item.nama_jadwal || "" })
+                setSelectedFile(null)
+                setIsFormOpen(true)
+              }}>
                 <Edit2 className="mr-2 h-4 w-4" />
                 Edit Data
               </DropdownMenuItem>
@@ -165,12 +189,18 @@ export default function AdminJadwalPage() {
         action={
           <FormDialog
             isOpen={isFormOpen}
-            onOpenChange={setIsFormOpen}
-            title="Upload Jadwal Baru"
-            description="Tambahkan dokumen jadwal perkuliahan atau ujian baru."
+            onOpenChange={(open) => {
+              setIsFormOpen(open)
+              if (!open) resetForm()
+            }}
+            title={isEditMode ? "Edit Jadwal" : "Upload Jadwal Baru"}
+            description={isEditMode ? "Perbarui nama atau file dokumen jadwal." : "Tambahkan dokumen jadwal perkuliahan atau ujian baru."}
             onSubmit={handleSubmit}
             trigger={
-              <Button className="bg-primary hover:bg-primary/90 text-white font-bold tracking-wider uppercase text-xs rounded-xl shadow-lg shadow-primary/20 gap-2 h-10 px-4">
+              <Button 
+                onClick={() => resetForm()}
+                className="bg-primary hover:bg-primary/90 text-white font-bold tracking-wider uppercase text-xs rounded-xl shadow-lg shadow-primary/20 gap-2 h-10 px-4"
+              >
                 <Plus size={16} /> Upload Jadwal
               </Button>
             }
@@ -181,8 +211,10 @@ export default function AdminJadwalPage() {
                 <Input id="nama" required value={formData.nama_jadwal} onChange={(e) => setFormData({nama_jadwal: e.target.value})} placeholder="Cth: Jadwal Semester Ganjil 2024" className="rounded-xl bg-neutral-50 border-neutral-200" />
               </div>
               <div className="space-y-2">
-                <Label className="text-xs font-bold uppercase text-neutral-500 block mb-2">Dokumen (PDF)</Label>
-                <Input type="file" accept=".pdf" required onChange={(e) => setSelectedFile(e.target.files?.[0] || null)} className="rounded-xl bg-neutral-50 border-neutral-200" />
+                <Label className="text-xs font-bold uppercase text-neutral-500 block mb-2">
+                  Dokumen (PDF) {isEditMode && <span className="text-neutral-400 normal-case">— Kosongkan jika tidak ingin mengganti file</span>}
+                </Label>
+                <Input type="file" accept=".pdf" required={!isEditMode} onChange={(e) => setSelectedFile(e.target.files?.[0] || null)} className="rounded-xl bg-neutral-50 border-neutral-200" />
               </div>
             </div>
             {isSubmitting && <div className="mt-2 text-sm text-primary flex items-center gap-2"><Loader2 className="w-4 h-4 animate-spin"/> Memproses...</div>}

@@ -127,9 +127,13 @@ export interface Fasilitas {
 
 export interface TriDharma {
   id: string
+  dosen_id: string
+  jenis: "Penelitian" | "Pengabdian" | "Buku Ajar" | "Publikasi" | "HKI" | "Sertifikat"
   judul: string
   deskripsi: string | null
-  tanggal: string | null
+  tahun: number | null
+  file_url: string | null
+  anggota: DosenAnggota[]
   created_at: string
   media_count?: number
   thumbnail_url?: string

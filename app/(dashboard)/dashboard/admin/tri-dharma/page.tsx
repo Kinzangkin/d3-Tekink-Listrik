@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Plus, Edit2, Trash2, CalendarDays, Loader2 } from "lucide-react"
 
-import { apiGet, apiPost, apiDelete } from "@/services/api"
+import { apiGet, apiPost, apiPut, apiDelete } from "@/services/api"
 
 import { 
   DropdownMenu,
@@ -25,6 +25,7 @@ import { Badge } from "@/components/ui/badge"
 
 export default function AdminTriDharmaPage() {
   const [isFormOpen, setIsFormOpen] = useState(false)
+  const [isEditMode, setIsEditMode] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [selectedId, setSelectedId] = useState<string | null>(null)
   
@@ -73,6 +74,13 @@ export default function AdminTriDharmaPage() {
     fetchDosen()
   }, [])
 
+  const resetForm = () => {
+    setFormData({ jenis: "Penelitian", judul: "", tahun: new Date().getFullYear().toString(), deskripsi: "", dosen_id: "" })
+    setSelectedFile(null)
+    setIsEditMode(false)
+    setSelectedId(null)
+  }
+
   const handleDelete = async () => {
     if (!selectedId) return
     setIsSubmitting(true)
@@ -103,27 +111,31 @@ export default function AdminTriDharmaPage() {
     payload.append("tahun", formData.tahun)
     payload.append("deskripsi", formData.deskripsi)
     
-    // Admin WAJIB mengisi dosen
-    if (!formData.dosen_id) {
+    // Admin WAJIB mengisi dosen saat membuat baru
+    if (!isEditMode && !formData.dosen_id) {
       alert("Harap pilih dosen!")
       setIsSubmitting(false)
       return
     }
-    payload.append("anggota_dosen_ids", formData.dosen_id)
+    if (formData.dosen_id) {
+      payload.append("anggota_dosen_ids", formData.dosen_id)
+    }
 
     if (selectedFile) {
       payload.append("file", selectedFile)
     }
 
     try {
-      const res = await apiPost('/tri-dharma', payload, true)
+      const res = isEditMode
+        ? await apiPut(`/tri-dharma/${selectedId}`, payload, true)
+        : await apiPost('/tri-dharma', payload, true)
+
       if (res?.data?.success) {
         setIsFormOpen(false)
-        setFormData({ jenis: "Penelitian", judul: "", tahun: new Date().getFullYear().toString(), deskripsi: "", dosen_id: "" })
-        setSelectedFile(null)
+        resetForm()
         fetchData()
       } else {
-        alert(res?.data?.message || "Gagal menyimpan data")
+        alert(res?.data?.message || `Gagal ${isEditMode ? "memperbarui" : "menyimpan"} data`)
       }
     } catch (err) {
       console.error("Error submitting", err)
@@ -191,7 +203,19 @@ export default function AdminTriDharmaPage() {
               <MoreHorizontal className="h-4 w-4" />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="rounded-xl">
-              <DropdownMenuItem className="cursor-pointer font-medium text-neutral-600" onClick={() => setIsFormOpen(true)}>
+              <DropdownMenuItem className="cursor-pointer font-medium text-neutral-600" onClick={() => {
+                setIsEditMode(true)
+                setSelectedId(item.id)
+                setFormData({
+                  jenis: item.jenis || "Penelitian",
+                  judul: item.judul || "",
+                  tahun: item.tahun?.toString() || new Date().getFullYear().toString(),
+                  deskripsi: item.deskripsi || "",
+                  dosen_id: item.dosen_id || ""
+                })
+                setSelectedFile(null)
+                setIsFormOpen(true)
+              }}>
                 <Edit2 className="mr-2 h-4 w-4" />
                 Edit Data
               </DropdownMenuItem>
@@ -217,12 +241,18 @@ export default function AdminTriDharmaPage() {
         action={
           <FormDialog
             isOpen={isFormOpen}
-            onOpenChange={setIsFormOpen}
-            title="Tambah Kegiatan"
-            description="Dokumentasikan kegiatan Tri Dharma baru."
+            onOpenChange={(open) => {
+              setIsFormOpen(open)
+              if (!open) resetForm()
+            }}
+            title={isEditMode ? "Edit Kegiatan" : "Tambah Kegiatan"}
+            description={isEditMode ? "Perbarui data kegiatan Tri Dharma." : "Dokumentasikan kegiatan Tri Dharma baru."}
             onSubmit={handleSubmit}
             trigger={
-              <Button className="bg-primary hover:bg-primary/90 text-white font-bold tracking-wider uppercase text-xs rounded-xl shadow-lg shadow-primary/20 gap-2 h-10 px-4">
+              <Button 
+                onClick={() => resetForm()}
+                className="bg-primary hover:bg-primary/90 text-white font-bold tracking-wider uppercase text-xs rounded-xl shadow-lg shadow-primary/20 gap-2 h-10 px-4"
+              >
                 <Plus size={16} /> Tambah Kegiatan
               </Button>
             }
@@ -234,7 +264,7 @@ export default function AdminTriDharmaPage() {
                   className="flex h-10 w-full rounded-xl border border-neutral-200 bg-neutral-50 px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                   value={formData.dosen_id}
                   onChange={(e) => setFormData({...formData, dosen_id: e.target.value})}
-                  required
+                  required={!isEditMode}
                 >
                   <option value="" disabled>-- Pilih Dosen --</option>
                   {dosenList.map(d => (
@@ -253,10 +283,8 @@ export default function AdminTriDharmaPage() {
                   <option value="Pengabdian">Pengabdian</option>
                   <option value="Buku Ajar">Buku Ajar</option>
                   <option value="Publikasi">Publikasi</option>
-                  {/* HKI & Sertifikat dinonaktifkan
                   <option value="HKI">HKI</option>
                   <option value="Sertifikat">Sertifikat</option>
-                  */}
                 </select>
               </div>
               <div className="space-y-2">
@@ -272,7 +300,9 @@ export default function AdminTriDharmaPage() {
                 <Textarea id="deskripsi" value={formData.deskripsi} onChange={(e) => setFormData({...formData, deskripsi: e.target.value})} placeholder="Tulis deskripsi singkat kegiatan..." className="rounded-xl bg-neutral-50 border-neutral-200 resize-none h-24" />
               </div>
               <div className="space-y-2">
-                <Label className="text-xs font-bold uppercase text-neutral-500 block mb-2">Dokumen Pendukung (PDF/Image)</Label>
+                <Label className="text-xs font-bold uppercase text-neutral-500 block mb-2">
+                  Dokumen Pendukung (PDF/Image) {isEditMode && <span className="text-neutral-400 normal-case">— File baru akan menggantikan file lama</span>}
+                </Label>
                 <Input type="file" onChange={(e) => setSelectedFile(e.target.files?.[0] || null)} className="rounded-xl bg-neutral-50 border-neutral-200" />
               </div>
             </div>

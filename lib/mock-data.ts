@@ -256,9 +256,15 @@ export const mockFasilitas: Fasilitas[] = [
 export const mockTriDharma: TriDharma[] = [
   {
     id: "tri-1",
+    dosen_id: "dosen-1",
+    jenis: "Penelitian",
     judul: "Hibah Kompetisi Inovasi Elektrok",
     deskripsi: "Prestasi dosen dan mahasiswa dalam meraih pendanaan riset nasional.",
-    tanggal: "2024-02-15",
+    tahun: 2024,
+    file_url: null,
+    anggota: [
+      { dosen_id: "dosen-1", nama_dosen: "Dr. Budi Santoso", peran: "Ketua" }
+    ],
     created_at: "2024-02-16T00:00:00Z",
     media_count: 2,
     thumbnail_url: "https://picsum.photos/seed/award/400/300"

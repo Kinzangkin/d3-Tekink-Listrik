@@ -9,11 +9,12 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Plus, Edit2, Trash2, Image as ImageIcon, Loader2 } from "lucide-react"
-import { apiGet, apiPost, apiDelete } from "@/services/api"
+import { apiGet, apiPost, apiPut, apiDelete } from "@/services/api"
 import Image from "next/image"
 
 export default function AdminFasilitasPage() {
   const [isFormOpen, setIsFormOpen] = useState(false)
+  const [isEditMode, setIsEditMode] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [selectedId, setSelectedId] = useState<string | null>(null)
 
@@ -41,6 +42,13 @@ export default function AdminFasilitasPage() {
   useEffect(() => {
     fetchData()
   }, [])
+
+  const resetForm = () => {
+    setFormData({ judul_fasilitas: "", deskripsi: "" })
+    setSelectedFiles([])
+    setIsEditMode(false)
+    setSelectedId(null)
+  }
 
   const handleDelete = async () => {
     if (!selectedId) return
@@ -79,14 +87,16 @@ export default function AdminFasilitasPage() {
     }
 
     try {
-      const res = await apiPost('/fasilitas', payload, true)
+      const res = isEditMode
+        ? await apiPut(`/fasilitas/${selectedId}`, payload, true)
+        : await apiPost('/fasilitas', payload, true)
+
       if (res?.data?.success) {
         setIsFormOpen(false)
-        setFormData({ judul_fasilitas: "", deskripsi: "" })
-        setSelectedFiles([])
+        resetForm()
         fetchData()
       } else {
-        alert(res?.data?.message || "Gagal menambah fasilitas")
+        alert(res?.data?.message || `Gagal ${isEditMode ? "memperbarui" : "menambah"} fasilitas`)
       }
     } catch (e) {
       console.error(e)
@@ -103,12 +113,18 @@ export default function AdminFasilitasPage() {
         action={
           <FormDialog
             isOpen={isFormOpen}
-            onOpenChange={setIsFormOpen}
-            title="Tambah Fasilitas"
-            description="Tambahkan informasi dan foto fasilitas baru."
+            onOpenChange={(open) => {
+              setIsFormOpen(open)
+              if (!open) resetForm()
+            }}
+            title={isEditMode ? "Edit Fasilitas" : "Tambah Fasilitas"}
+            description={isEditMode ? "Perbarui informasi fasilitas. Foto baru akan ditambahkan ke galeri." : "Tambahkan informasi dan foto fasilitas baru."}
             onSubmit={handleSubmit}
             trigger={
-              <Button className="bg-primary hover:bg-primary/90 text-white font-bold tracking-wider uppercase text-xs rounded-xl shadow-lg shadow-primary/20 gap-2 h-10 px-4">
+              <Button 
+                onClick={() => resetForm()}
+                className="bg-primary hover:bg-primary/90 text-white font-bold tracking-wider uppercase text-xs rounded-xl shadow-lg shadow-primary/20 gap-2 h-10 px-4"
+              >
                 <Plus size={16} /> Tambah Fasilitas
               </Button>
             }
@@ -123,7 +139,9 @@ export default function AdminFasilitasPage() {
                 <Textarea id="deskripsi" value={formData.deskripsi} onChange={(e) => setFormData({...formData, deskripsi: e.target.value})} placeholder="Jelaskan fungsi dan peralatan di fasilitas ini..." className="rounded-xl bg-neutral-50 border-neutral-200 resize-none h-24" />
               </div>
               <div className="space-y-2">
-                <Label className="text-xs font-bold uppercase text-neutral-500 block mb-2">Foto / Media</Label>
+                <Label className="text-xs font-bold uppercase text-neutral-500 block mb-2">
+                  Foto / Media {isEditMode && <span className="text-neutral-400 normal-case">— Foto baru akan ditambahkan ke galeri</span>}
+                </Label>
                 <Input type="file" accept="image/*" multiple onChange={(e) => setSelectedFiles(Array.from(e.target.files || []))} className="rounded-xl bg-neutral-50 border-neutral-200" />
               </div>
             </div>
@@ -168,7 +186,16 @@ export default function AdminFasilitasPage() {
                 </p>
                 
                 <div className="flex items-center gap-2 pt-4 border-t border-neutral-100">
-                  <Button variant="outline" className="flex-1 rounded-xl h-10 text-xs font-bold uppercase tracking-widest text-neutral-600 hover:text-primary hover:bg-primary/5 border-neutral-200" onClick={() => setIsFormOpen(true)}>
+                  <Button variant="outline" className="flex-1 rounded-xl h-10 text-xs font-bold uppercase tracking-widest text-neutral-600 hover:text-primary hover:bg-primary/5 border-neutral-200" onClick={() => {
+                    setIsEditMode(true)
+                    setSelectedId(item.id)
+                    setFormData({
+                      judul_fasilitas: item.judul_fasilitas || item.nama_fasilitas || item.nama || "",
+                      deskripsi: item.deskripsi || ""
+                    })
+                    setSelectedFiles([])
+                    setIsFormOpen(true)
+                  }}>
                     <Edit2 size={14} className="mr-2" /> Edit
                   </Button>
                   <Button variant="outline" className="flex-1 rounded-xl h-10 text-xs font-bold uppercase tracking-widest text-rose-500 hover:text-rose-600 hover:bg-rose-50 hover:border-rose-200 border-neutral-200" onClick={() => {
