@@ -21,17 +21,54 @@ export function StatistikSection() {
   })
 
   useEffect(() => {
-    const fetchStatistik = async () => {
+    const fetchRealData = async () => {
       try {
-        const res = await apiGet("/statistik")
-        if (res && res.data && res.data.success) {
-          setData(res.data.data)
+        // 1. Ambil Jumlah Dosen Nyata dari Database
+        const resDosen = await apiGet("/dosen")
+        let totalDosen = 24 // Fallback jika DB kosong
+        if (resDosen && resDosen.data && resDosen.data.success) {
+          const dosenArray = resDosen.data.data || []
+          totalDosen = dosenArray.length || totalDosen
         }
+
+        // 2. Ambil Data Statistik untuk Menghitung Mahasiswa Aktif & Total Lulusan
+        const resStatistik = await apiGet("/statistik")
+        let totalMahasiswa = 450 // Fallback
+        let totalAlumni = 3500 // Fallback
+
+        if (resStatistik && resStatistik.data && resStatistik.data.success) {
+          const statsArray: any[] = resStatistik.data.data || []
+          if (statsArray.length > 0) {
+            // Urutkan tahun dari yang terbaru
+            const sortedStats = [...statsArray].sort((a, b) => b.tahun - a.tahun)
+            
+            // D3 adalah program 3 tahun: hitung jumlah mahasiswa yang diterima dalam 3 angkatan terbaru
+            const calculatedStudents = sortedStats
+              .slice(0, 3)
+              .reduce((sum, item) => sum + (item.jumlah_diterima || 0), 0)
+              
+            if (calculatedStudents > 0) {
+              totalMahasiswa = calculatedStudents
+            }
+
+            // Total Alumni = Baseline historis (3000) + Semua lulusan yang tercatat di database
+            const calculatedGraduates = statsArray.reduce((sum, item) => sum + (item.jumlah_lulusan || 0), 0)
+            if (calculatedGraduates > 0) {
+              totalAlumni = 3000 + calculatedGraduates
+            }
+          }
+        }
+
+        setData({
+          total_dosen: totalDosen,
+          total_mahasiswa: totalMahasiswa,
+          total_alumni: totalAlumni
+        })
       } catch (error) {
-        console.error("Failed to fetch statistik:", error)
+        console.error("Gagal memuat data statistik beranda:", error)
       }
     }
-    fetchStatistik()
+    fetchRealData()
   }, [])
 
   return (
