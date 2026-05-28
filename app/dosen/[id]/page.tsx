@@ -391,7 +391,7 @@ export default function DosenDetailPage() {
                         {typeof tag === 'string' ? tag : (tag as any)?.nama_keahlian || ""}
                       </Badge>
                     )) : (
-                      <p className="text-xs text-neutral-400 italic">Belum ada data keahlian</p>
+                      <p className="text-xs text-neutral-400 italic">Belum ada data kompetensi</p>
                     )}
                   </div>
                   

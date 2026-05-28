@@ -42,13 +42,13 @@ export function DashboardHeader() {
     { title: "Jadwal Kuliah", url: "/dashboard/admin/jadwal" },
     { title: "Fasilitas", url: "/dashboard/admin/fasilitas" },
     { title: "Tri Dharma", url: "/dashboard/admin/tri-dharma" },
-    { title: "Master Keahlian", url: "/dashboard/admin/keahlian" },
+    { title: "Master Kompetensi", url: "/dashboard/admin/keahlian" },
   ]
 
   const dosenMenu = [
     { title: "Overview", url: "/dashboard/dosen" },
     { title: "Profil Saya", url: "/dashboard/dosen/profil" },
-    { title: "Keahlian", url: "/dashboard/dosen/keahlian" },
+    { title: "Kompetensi", url: "/dashboard/dosen/keahlian" },
     { title: "Tri Dharma", url: "/dashboard/dosen/tri-dharma" },
     // { title: "Publikasi", url: "/dashboard/dosen/publikasi" },
     // { title: "Penelitian", url: "/dashboard/dosen/penelitian" },

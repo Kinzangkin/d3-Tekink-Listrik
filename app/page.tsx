@@ -26,11 +26,11 @@ export default function Home() {
           />
         </div>
         <div className="relative z-20 text-center text-white px-4">
-          <h2 className="text-sm md:text-base font-bold tracking-[0.2em] mb-4">MENGAPA MEMILIH KAMI</h2>
-          <p className="text-3xl md:text-5xl font-black uppercase tracking-tight max-w-3xl leading-tight">
-            TEKNIK LISTRIK UNIXE UNIVERSITY DALAM PERGERAKAN
+          <h2 className="text-sm md:text-base font-bold tracking-[0.2em] mb-4 uppercase">MENGAPA MEMILIH KAMI</h2>
+          <p className="text-2xl md:text-4xl lg:text-5xl font-black tracking-tight max-w-4xl leading-tight">
+            Membangun Generasi Teknik yang Siap Industri dan Teknologi Masa Depan
           </p>
-          <Button variant="outline" className="mt-8 bg-transparent text-white border-white hover:bg-white hover:text-primary rounded-none font-bold tracking-widest px-8 py-6">
+          <Button variant="outline" className="mt-8 bg-transparent text-white border-white hover:bg-white hover:text-primary rounded-none font-bold tracking-widest px-8 py-6 cursor-pointer">
             PUTAR VIDEO
           </Button>
         </div>

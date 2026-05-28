@@ -2,7 +2,6 @@ import { SectionHeader } from "@/components/ui/section-header"
 import { GrafikMahasiswa } from "./GrafikMahasiswa"
 import { JadwalPanel } from "./JadwalPanel"
 import { KalenderWidget } from "./KalenderWidget"
-import { SectionDivider } from "@/components/ui/section-divider"
 
 export function AkademikSection() {
   return (
@@ -23,8 +22,6 @@ export function AkademikSection() {
           </div>
         </div>
       </div>
-      
-      <SectionDivider position="bottom" variant="dark" />
     </section>
   )
 }

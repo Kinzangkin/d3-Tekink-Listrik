@@ -86,7 +86,7 @@ export function DashboardSidebar({ role: propRole }: DashboardSidebarProps) {
       icon: GraduationCap,
     },
     {
-      title: "Master Keahlian",
+      title: "Master Kompetensi",
       url: "/dashboard/admin/keahlian",
       icon: Settings,
     },
@@ -104,7 +104,7 @@ export function DashboardSidebar({ role: propRole }: DashboardSidebarProps) {
       icon: User,
     },
     {
-      title: "Keahlian",
+      title: "Kompetensi",
       url: "/dashboard/dosen/keahlian",
       icon: Settings, // Import already available from Admin Menu
     },

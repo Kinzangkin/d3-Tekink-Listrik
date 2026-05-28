@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button"
 import { motion } from "framer-motion"
 import { SectionDivider } from "@/components/ui/section-divider"
 import Image from "next/image"
+import Link from "next/link"
 
 export function HeroSection() {
   return (
@@ -50,12 +51,14 @@ export function HeroSection() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.5 }}
         >
-          <Button 
-            size="lg" 
-            className="h-14 px-8 text-lg font-bold bg-primary hover:bg-primary/90 text-white"
-          >
-            VISI & MISI
-          </Button>
+          <Link href="/visi-misi" passHref>
+            <Button 
+              size="lg" 
+              className="h-14 px-8 text-lg font-bold bg-primary hover:bg-primary/90 text-white cursor-pointer"
+            >
+              VISI & MISI
+            </Button>
+          </Link>
         </motion.div>
       </div>
 

@@ -41,18 +41,39 @@ export default function VisiMisiPage() {
   }, [])
 
   // Process Visi
-  const visiItems = data
+  const visiRaw = data
     .filter((item) => item.tipe === "Visi")
     .sort((a, b) => a.urutan - b.urutan)
-    .map((item) => item.deskripsi)
 
-  const parsedVisiData = visiItems.length > 0
-    ? [{ title: "Visi Program Studi", items: visiItems }]
+  const parsedVisiData = visiRaw.length > 0
+    ? visiRaw.map((item, index) => {
+        const hasColon = item.deskripsi.includes(":")
+        if (hasColon) {
+          const parts = item.deskripsi.split(":")
+          return {
+            id: `visi-${item.id}`,
+            title: parts[0].trim(),
+            items: [parts.slice(1).join(":").trim()],
+          }
+        }
+        return {
+          id: `visi-${item.id}`,
+          title: `Visi Utama ${index + 1}`,
+          items: [item.deskripsi.trim()],
+        }
+      })
     : [
         {
-          title: "Visi Program Studi",
+          id: "default-visi-1",
+          title: "Visi Utama 1",
           items: [
             "Menjadi program studi unggulan di bidang teknik listrik yang menghasilkan lulusan berdaya saing tinggi di tingkat nasional dan internasional.",
+          ],
+        },
+        {
+          id: "default-visi-2",
+          title: "Visi Utama 2",
+          items: [
             "Mengembangkan ilmu pengetahuan dan teknologi kelistrikan yang inovatif, adaptif, dan berwawasan lingkungan.",
           ],
         },
@@ -69,29 +90,34 @@ export default function VisiMisiPage() {
         if (hasColon) {
           const parts = item.deskripsi.split(":")
           return {
+            id: `misi-${item.id}`,
             title: parts[0].trim(),
             items: [parts.slice(1).join(":").trim()],
           }
         }
         return {
+          id: `misi-${item.id}`,
           title: `Langkah Strategis ${index + 1}`,
           items: [item.deskripsi.trim()],
         }
       })
     : [
         {
+          id: "default-misi-1",
           title: "Pendidikan Berkualitas",
           items: [
             "Menyelenggarakan pendidikan tinggi yang bermutu dalam bidang teknik listrik dengan kurikulum berbasis kompetensi dan kebutuhan industri.",
           ],
         },
         {
+          id: "default-misi-2",
           title: "Penelitian & Pengembangan",
           items: [
             "Melaksanakan penelitian terapan di bidang teknik listrik yang berkontribusi pada pengembangan ilmu pengetahuan dan teknologi.",
           ],
         },
         {
+          id: "default-misi-3",
           title: "Pengabdian Masyarakat",
           items: [
             "Melaksanakan pengabdian kepada masyarakat melalui penerapan ilmu teknik listrik untuk meningkatkan kesejahteraan masyarakat.",
@@ -110,11 +136,13 @@ export default function VisiMisiPage() {
         if (hasColon) {
           const parts = item.deskripsi.split(":")
           return {
+            id: `tujuan-${item.id}`,
             title: parts[0].trim(),
             items: [parts.slice(1).join(":").trim()],
           }
         }
         return {
+          id: `tujuan-${item.id}`,
           title: `Sasaran Utama ${index + 1}`,
           items: [item.deskripsi.trim()],
         }
@@ -153,10 +181,10 @@ export default function VisiMisiPage() {
                 title="VISI KAMI"
                 align="left"
               />
-              <div className="grid grid-cols-1 gap-8 mt-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
                 {parsedVisiData.map((item, index) => (
                   <KartuVisiMisi
-                    key={index}
+                    key={item.id}
                     title={item.title}
                     items={item.items}
                     index={index}
@@ -178,7 +206,7 @@ export default function VisiMisiPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
                 {parsedMisiData.map((item, index) => (
                   <KartuVisiMisi
-                    key={index}
+                    key={item.id}
                     title={item.title}
                     items={item.items}
                     index={index}
@@ -201,7 +229,7 @@ export default function VisiMisiPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
                   {parsedTujuanData.map((item, index) => (
                     <KartuVisiMisi
-                      key={index}
+                      key={item.id}
                       title={item.title}
                       items={item.items}
                       index={index}

@@ -104,8 +104,8 @@ export default function DosenKeahlianPage() {
   return (
     <div className="space-y-6">
       <PageHeader 
-        title="Keahlian Saya" 
-        description="Kelola bidang keahlian dan spesialisasi Anda sebagai dosen."
+        title="Kompetensi Saya" 
+        description="Kelola bidang kompetensi dan spesialisasi Anda sebagai dosen."
         icon={<Settings className="text-primary w-8 h-8" />}
       />
 
@@ -115,7 +115,7 @@ export default function DosenKeahlianPage() {
         <div className="lg:col-span-2 space-y-6">
           <Card className="border-none shadow-sm bg-white overflow-hidden rounded-3xl">
             <CardHeader className="bg-neutral-50/50 border-b border-neutral-100">
-              <CardTitle className="text-xl font-black text-neutral-800">Daftar Keahlian</CardTitle>
+              <CardTitle className="text-xl font-black text-neutral-800">Daftar Kompetensi</CardTitle>
               <CardDescription>Bidang kompetensi yang saat ini tercatat di profil Anda.</CardDescription>
             </CardHeader>
             <CardContent className="p-6">
@@ -135,7 +135,7 @@ export default function DosenKeahlianPage() {
                       <button 
                         onClick={() => handleRemoveKeahlian(k.keahlian_id)}
                         className="opacity-50 hover:opacity-100 hover:text-red-500 transition-opacity focus:outline-none ml-1"
-                        title="Hapus Keahlian"
+                        title="Hapus Kompetensi"
                       >
                         <X size={14} />
                       </button>
@@ -145,7 +145,7 @@ export default function DosenKeahlianPage() {
               ) : (
                 <div className="text-center py-12 border-2 border-dashed border-neutral-200 rounded-2xl">
                   <Settings className="w-12 h-12 text-neutral-300 mx-auto mb-3" />
-                  <p className="text-neutral-500 font-medium">Anda belum menambahkan keahlian apapun.</p>
+                  <p className="text-neutral-500 font-medium">Anda belum menambahkan kompetensi apapun.</p>
                 </div>
               )}
             </CardContent>
@@ -156,8 +156,8 @@ export default function DosenKeahlianPage() {
         <div className="space-y-6">
           <Card className="border-none shadow-sm bg-white overflow-hidden rounded-3xl">
             <CardHeader className="bg-neutral-50/50 border-b border-neutral-100">
-              <CardTitle className="text-lg font-black text-neutral-800">Tambah Keahlian</CardTitle>
-              <CardDescription>Pilih dari daftar master keahlian.</CardDescription>
+              <CardTitle className="text-lg font-black text-neutral-800">Tambah Kompetensi</CardTitle>
+              <CardDescription>Pilih dari daftar master kompetensi.</CardDescription>
             </CardHeader>
             <CardContent className="p-6 space-y-4">
               <div className="space-y-2">
@@ -169,7 +169,7 @@ export default function DosenKeahlianPage() {
                   <SelectTrigger className="w-full h-12 rounded-xl">
                     <SelectValue placeholder={
                       isLoading ? "Memuat data..." : 
-                      availableKeahlian.length === 0 ? "Semua keahlian sudah dipilih" : "Pilih keahlian..."
+                      availableKeahlian.length === 0 ? "Semua kompetensi sudah dipilih" : "Pilih kompetensi..."
                     } />
                   </SelectTrigger>
                   <SelectContent>
@@ -181,7 +181,7 @@ export default function DosenKeahlianPage() {
               </div>
 
               <Button 
-                className="w-full h-12 rounded-xl bg-primary hover:bg-primary/90 text-white font-bold tracking-wide"
+                className="w-full h-12 rounded-xl bg-primary hover:bg-primary/90 text-white font-bold tracking-wide cursor-pointer"
                 onClick={handleAddKeahlian}
                 disabled={!selectedKeahlian || isSubmitting}
               >
@@ -197,7 +197,7 @@ export default function DosenKeahlianPage() {
           
           <div className="bg-blue-50 border border-blue-100 rounded-2xl p-4">
             <p className="text-xs text-blue-800 font-medium leading-relaxed">
-              <strong>Info:</strong> Jika keahlian yang Anda cari tidak ada dalam daftar, silakan hubungi Admin Prodi untuk menambahkannya ke dalam Master Data Keahlian.
+              <strong>Info:</strong> Jika kompetensi yang Anda cari tidak ada dalam daftar, silakan hubungi Admin Prodi untuk menambahkannya ke dalam Master Data Kompetensi.
             </p>
           </div>
         </div>

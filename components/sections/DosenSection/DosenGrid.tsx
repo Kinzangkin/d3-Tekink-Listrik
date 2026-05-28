@@ -73,7 +73,7 @@ export function DosenGrid() {
           <HiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400 group-focus-within:text-primary transition-colors" size={20} />
           <Input
             type="text"
-            placeholder="Cari nama dosen, keahlian, atau NIP..."
+            placeholder="Cari nama dosen, kompetensi, atau NIP..."
             className="pl-12 h-14 bg-white border-neutral-200 shadow-sm focus:border-primary focus:ring-1 focus:ring-primary rounded-2xl text-lg"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}

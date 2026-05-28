@@ -89,7 +89,7 @@ export default function AdminKeahlianPage() {
       className: "w-20 text-neutral-400 font-medium"
     },
     {
-      header: "Nama Keahlian",
+      header: "Nama Kompetensi",
       accessorKey: "nama_keahlian",
       className: "font-bold text-neutral-800"
     },
@@ -117,14 +117,14 @@ export default function AdminKeahlianPage() {
   return (
     <div className="space-y-6">
       <PageHeader 
-        title="Master Keahlian" 
-        description="Kelola daftar referensi bidang keahlian dosen." 
+        title="Master Kompetensi" 
+        description="Kelola daftar referensi bidang kompetensi dosen." 
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-1">
           <div className="bg-white rounded-3xl p-6 shadow-sm border border-neutral-100 sticky top-24">
-            <h3 className="font-black text-neutral-800 uppercase tracking-tight mb-4 text-lg">Tambah Keahlian</h3>
+            <h3 className="font-black text-neutral-800 uppercase tracking-tight mb-4 text-lg">Tambah Kompetensi</h3>
             <div className="space-y-4">
               <div>
                 <Input 
@@ -137,7 +137,7 @@ export default function AdminKeahlianPage() {
               <Button 
                 onClick={handleSubmit} 
                 disabled={isSubmitting || !newKeahlian.trim()} 
-                className="w-full bg-primary hover:bg-primary/90 text-white font-bold tracking-wider uppercase text-xs rounded-xl shadow-lg shadow-primary/20 h-12"
+                className="w-full bg-primary hover:bg-primary/90 text-white font-bold tracking-wider uppercase text-xs rounded-xl shadow-lg shadow-primary/20 h-12 cursor-pointer"
               >
                 {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Plus size={16} className="mr-2" />}
                 {isSubmitting ? "Memproses..." : "Simpan Baru"}
@@ -147,7 +147,7 @@ export default function AdminKeahlianPage() {
             <div className="mt-8 p-4 bg-amber-50 rounded-2xl border border-amber-100">
               <h4 className="text-amber-800 font-bold text-sm mb-2">Informasi</h4>
               <p className="text-amber-700/80 text-xs font-medium leading-relaxed">
-                Data master ini digunakan sebagai referensi saat dosen memilih bidang keahlian mereka. Hapus dengan hati-hati jika data sudah digunakan.
+                Data master ini digunakan sebagai referensi saat dosen memilih bidang kompetensi mereka. Hapus dengan hati-hati jika data sudah digunakan.
               </p>
             </div>
           </div>
@@ -160,7 +160,7 @@ export default function AdminKeahlianPage() {
             <DataTable 
               columns={columns} 
               data={data} 
-              searchPlaceholder="Cari master keahlian..." 
+              searchPlaceholder="Cari master kompetensi..." 
             />
           )}
         </div>
@@ -169,8 +169,8 @@ export default function AdminKeahlianPage() {
       <DeleteConfirmDialog
         isOpen={isDeleteDialogOpen}
         onOpenChange={setIsDeleteDialogOpen}
-        title="Hapus Master Keahlian?"
-        description="Perhatian: Jika keahlian ini sedang digunakan oleh dosen, relasinya juga akan terhapus. Lanjutkan?"
+        title="Hapus Master Kompetensi?"
+        description="Perhatian: Jika kompetensi ini sedang digunakan oleh dosen, relasinya juga akan terhapus. Lanjutkan?"
         onConfirm={handleDelete}
         trigger={<button className="hidden"></button>}
       />

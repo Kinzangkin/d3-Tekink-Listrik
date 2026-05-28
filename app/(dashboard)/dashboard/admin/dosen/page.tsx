@@ -154,7 +154,7 @@ export default function AdminDosenPage() {
       )
     },
     {
-      header: "Keahlian",
+      header: "Kompetensi",
       cell: (item: any) => (
         <div className="flex flex-wrap gap-1">
           {item.keahlian?.slice(0, 2).map((k: any) => (
@@ -251,11 +251,40 @@ export default function AdminDosenPage() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="jabatan" className="text-xs font-bold uppercase text-neutral-500">Jabatan Fungsional</Label>
-                  <Input id="jabatan" value={formData.jabatan_fungsional} onChange={(e) => setFormData({...formData, jabatan_fungsional: e.target.value})} placeholder="Cth: Lektor Kepala" className="rounded-xl bg-neutral-50 border-neutral-200" />
+                  <select 
+                    id="jabatan" 
+                    required
+                    value={formData.jabatan_fungsional} 
+                    onChange={(e) => setFormData({...formData, jabatan_fungsional: e.target.value})} 
+                    className="w-full rounded-xl bg-neutral-50 border border-neutral-200 h-10 px-3 focus:outline-none focus:ring-1 focus:ring-primary text-sm font-semibold text-neutral-700"
+                  >
+                    <option value="" disabled>Pilih Jabatan Fungsional</option>
+                    <option value="Asisten Ahli">Asisten Ahli</option>
+                    <option value="Lektor">Lektor</option>
+                    <option value="Lektor Kepala">Lektor Kepala</option>
+                    <option value="Guru Besar">Guru Besar</option>
+                  </select>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="golongan" className="text-xs font-bold uppercase text-neutral-500">Pangkat / Golongan</Label>
-                  <Input id="golongan" value={formData.pangkat_golongan} onChange={(e) => setFormData({...formData, pangkat_golongan: e.target.value})} placeholder="Cth: IV/a" className="rounded-xl bg-neutral-50 border-neutral-200" />
+                  <select 
+                    id="golongan" 
+                    required
+                    value={formData.pangkat_golongan} 
+                    onChange={(e) => setFormData({...formData, pangkat_golongan: e.target.value})} 
+                    className="w-full rounded-xl bg-neutral-50 border border-neutral-200 h-10 px-3 focus:outline-none focus:ring-1 focus:ring-primary text-sm font-semibold text-neutral-700"
+                  >
+                    <option value="" disabled>Pilih Pangkat / Golongan</option>
+                    <option value="III/a">III/a (Penata Muda)</option>
+                    <option value="III/b">III/b (Penata Muda Tk. I)</option>
+                    <option value="III/c">III/c (Penata)</option>
+                    <option value="III/d">III/d (Penata Tk. I)</option>
+                    <option value="IV/a">IV/a (Pembina)</option>
+                    <option value="IV/b">IV/b (Pembina Tk. I)</option>
+                    <option value="IV/c">IV/c (Pembina Utama Muda)</option>
+                    <option value="IV/d">IV/d (Pembina Utama Madya)</option>
+                    <option value="IV/e">IV/e (Pembina Utama)</option>
+                  </select>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="email" className="text-xs font-bold uppercase text-neutral-500">Email Login</Label>
