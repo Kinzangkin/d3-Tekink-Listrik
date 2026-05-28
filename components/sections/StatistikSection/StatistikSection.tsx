@@ -42,7 +42,7 @@ export function StatistikSection() {
           <div>
             <SectionHeader 
               subtitle="TENTANG KAMI"
-              title="MEMBENTUK MINDA, MENGINSPIRASI MASA DEPAN"
+              title="MEMBANGUN KEAHLIAN, MENGINSPIRASI MASA DEPAN"
               align="left"
             />
             <p className="text-neutral-600 mb-12 text-lg leading-relaxed max-w-xl">

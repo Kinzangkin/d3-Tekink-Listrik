@@ -13,9 +13,26 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel"
 
+interface NewsItem {
+  title: string
+  category: string
+  image: string
+  link: string
+}
+
+interface RawNewsItem {
+  title: string
+  link: string
+  contentSnippet?: string
+  image?: {
+    small?: string
+    large?: string
+  }
+}
+
 export function BeritaSection() {
   // Hand-picked high-quality electrical engineering fallbacks in case of network issues/loading
-  const defaultNews = [
+  const defaultNews: NewsItem[] = [
     {
       title: "Peluang Karir Lulusan D3 Teknik Listrik di Era Energi Baru Terbarukan",
       category: "PROSPEK KARIR",
@@ -42,14 +59,14 @@ export function BeritaSection() {
     }
   ]
 
-  const [news, setNews] = useState<any[]>(defaultNews)
+  const [news, setNews] = useState<NewsItem[]>(defaultNews)
   const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
     const fetchLiveNews = async () => {
       setIsLoading(true)
       try {
-        const res = await fetch("https://berita-indo-api-next.vercel.app/api/cnn-news/teknologi")
+        const res = await fetch("/api/news")
         const json = await res.json()
         
         if (json && json.data && json.data.length > 0) {
@@ -61,7 +78,7 @@ export function BeritaSection() {
           ]
 
           // Filter for highly relevant articles
-          const relevantArticles = json.data.filter((item: any) => {
+          const relevantArticles = json.data.filter((item: RawNewsItem) => {
             const text = (item.title + " " + (item.contentSnippet || "")).toLowerCase()
             return keywords.some(kw => text.includes(kw))
           })
@@ -69,7 +86,7 @@ export function BeritaSection() {
           // Fallback to all articles if not enough specific ones
           const sourceList = relevantArticles.length >= 3 ? relevantArticles : json.data
 
-          const mappedNews = sourceList.slice(0, 8).map((item: any) => {
+          const mappedNews = sourceList.slice(0, 8).map((item: RawNewsItem) => {
             let category = "TEKNOLOGI"
             const titleLower = item.title.toLowerCase()
             

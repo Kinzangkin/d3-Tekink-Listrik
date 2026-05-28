@@ -66,6 +66,11 @@ export function DashboardSidebar({ role: propRole }: DashboardSidebarProps) {
       icon: BarChart2,
     },
     {
+      title: "Visi & Misi",
+      url: "/dashboard/admin/profil-prodi",
+      icon: FileText,
+    },
+    {
       title: "Jadwal Kuliah",
       url: "/dashboard/admin/jadwal",
       icon: Calendar,
