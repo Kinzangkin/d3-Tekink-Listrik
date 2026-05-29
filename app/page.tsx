@@ -30,9 +30,9 @@ export default function Home() {
           <p className="text-2xl md:text-4xl lg:text-5xl font-black tracking-tight max-w-4xl leading-tight">
             Membangun Generasi Teknik yang Siap Industri dan Teknologi Masa Depan
           </p>
-          <Button variant="outline" className="mt-8 bg-transparent text-white border-white hover:bg-white hover:text-primary rounded-none font-bold tracking-widest px-8 py-6 cursor-pointer">
+          {/* <Button variant="outline" className="mt-8 bg-transparent text-white border-white hover:bg-white hover:text-primary rounded-none font-bold tracking-widest px-8 py-6 cursor-pointer">
             PUTAR VIDEO
-          </Button>
+          </Button> */}
         </div>
       </section>
 
