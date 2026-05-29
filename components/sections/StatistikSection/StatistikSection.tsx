@@ -112,7 +112,7 @@ export function StatistikSection() {
             <div className="flex flex-col gap-4">
               <div className="relative h-2/5 w-full rounded-2xl overflow-hidden">
                 <Image 
-                  src="public/gambar/gambar 20.jpg" 
+                  src="/gambar/gambar 20.jpg" 
                   alt="Students learning" 
                   fill
                   sizes="(max-width: 768px) 100vw, 50vw"
@@ -131,7 +131,7 @@ export function StatistikSection() {
             </div>
             <div className="relative h-full w-full rounded-2xl overflow-hidden mt-8">
               <Image 
-                src="public/gambar/gambar 28.jpg" 
+                src="/gambar/gambar 28.jpg" 
                 alt="Graduate student" 
                 fill
                 sizes="(max-width: 768px) 100vw, 50vw"
