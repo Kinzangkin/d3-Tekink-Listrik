@@ -34,7 +34,7 @@ export function HeroSection() {
           transition={{ duration: 0.5, delay: 0.3 }}
           className="text-4xl md:text-6xl lg:text-7xl font-black text-white leading-[1.1] max-w-4xl tracking-tight mb-8"
         >
-          GERBANG MENUJU PERJALANAN KEUNGGULAN YANG <span className="text-primary">TAK TERBATAS</span>
+          GERBANG MENUJU PERJALANAN KEUNGGULAN YANG TAK TERBATAS
         </motion.h1>
         
         <motion.p
