@@ -136,7 +136,7 @@ export default function DosenDetailPage() {
         {/* Background Image & Overlay */}
         <div className="absolute inset-0 z-0">
           <img 
-            src="https://images.unsplash.com/photo-1541339907198-e08756dedf3f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80" 
+            src="/img/GKT.jpg" 
             alt="Background" 
             className="w-full h-full object-cover opacity-30"
           />

@@ -10,7 +10,7 @@ interface PageHeroProps {
 }
 
 
-export function PageHero({ title, subtitle, description, bgImage = "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80" }: PageHeroProps) {
+export function PageHero({ title, subtitle, description, bgImage = "/img/GKT.jpg" }: PageHeroProps) {
   return (
     <section className="relative w-full pt-32 pb-20 bg-[#0f172a] overflow-hidden">
       {/* Background Image & Overlay */}
