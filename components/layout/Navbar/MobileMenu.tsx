@@ -33,7 +33,7 @@ export function MobileMenu({ isScrolled }: { isScrolled: boolean }) {
       case "BERANDA": return <Home size={20} />
       case "VISI MISI": return <Info size={20} />
       case "PROFILE DOSEN": return <Users size={20} />
-      case "KURIKULUM": return <BookOpen size={20} />
+      // case "KURIKULUM": return <BookOpen size={20} />
       case "FASILITAS & TRI DHARMA": return <Layers size={20} />
       default: return <ChevronRight size={20} />
     }

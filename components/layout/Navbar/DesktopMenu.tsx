@@ -8,7 +8,7 @@ export const navLinks = [
   { name: "BERANDA", href: "/" },
   { name: "VISI MISI", href: "/visi-misi" },
   { name: "PROFILE DOSEN", href: "/dosen" },
-  { name: "KURIKULUM", href: "/kurikulum" },
+  // { name: "KURIKULUM", href: "/kurikulum" },
   { name: "FASILITAS & TRI DHARMA", href: "/fasilitas" },
 ]
 
