@@ -36,8 +36,8 @@ export default function Home() {
         </div>
       </section>
 
-      <BeritaSection />
       <AkademikSection />
+      <BeritaSection />
 
       <Footer />
     </main>
