@@ -112,7 +112,7 @@ export function StatistikSection() {
             <div className="flex flex-col gap-4">
               <div className="relative h-2/5 w-full rounded-2xl overflow-hidden">
                 <Image 
-                  src="https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?auto=format&fit=crop&w=800&q=80" 
+                  src="public/gambar/gambar 20.jpg" 
                   alt="Students learning" 
                   fill
                   sizes="(max-width: 768px) 100vw, 50vw"
@@ -121,7 +121,7 @@ export function StatistikSection() {
               </div>
               <div className="relative h-3/5 w-full rounded-2xl overflow-hidden">
                 <Image 
-                  src="https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&q=80" 
+                  src="/gambar/gambar 29.jpg" 
                   alt="Campus building" 
                   fill
                   sizes="(max-width: 768px) 100vw, 50vw"
@@ -131,7 +131,7 @@ export function StatistikSection() {
             </div>
             <div className="relative h-full w-full rounded-2xl overflow-hidden mt-8">
               <Image 
-                src="https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?auto=format&fit=crop&w=800&q=1200" 
+                src="public/gambar/gambar 28.jpg" 
                 alt="Graduate student" 
                 fill
                 sizes="(max-width: 768px) 100vw, 50vw"
