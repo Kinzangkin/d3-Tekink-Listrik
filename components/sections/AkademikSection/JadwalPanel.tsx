@@ -27,21 +27,7 @@ export function JadwalPanel() {
     fetchJadwal()
   }, [])
 
-  // Fallback data default jika admin belum mengunggah jadwal di database
-  const listJadwal = data.length > 0 ? data : [
-    { 
-      id: "default-ganjil", 
-      nama_jadwal: "Semester Ganjil 2026/2027", 
-      status: "Aktif",
-      file_url: "#" 
-    },
-    { 
-      id: "default-genap", 
-      nama_jadwal: "Semester Genap 2025/2026", 
-      status: "Selesai",
-      file_url: "#" 
-    }
-  ]
+  const listJadwal = data;
 
   const getStatus = (item: any) => {
     if (item.status) return item.status
@@ -74,7 +60,7 @@ export function JadwalPanel() {
           <div className="flex items-center justify-center py-8">
             <Loader2 className="w-6 h-6 animate-spin text-primary" />
           </div>
-        ) : (
+        ) : listJadwal.length > 0 ? (
           listJadwal.map((sem, idx) => {
             const status = getStatus(sem)
             return (
@@ -96,6 +82,10 @@ export function JadwalPanel() {
               </div>
             )
           })
+        ) : (
+          <div className="text-center py-8 bg-neutral-50 rounded-lg border border-dashed border-neutral-200">
+            <p className="text-sm font-medium text-neutral-500">Belum ada jadwal perkuliahan yang diunggah.</p>
+          </div>
         )}
       </CardContent>
     </Card>

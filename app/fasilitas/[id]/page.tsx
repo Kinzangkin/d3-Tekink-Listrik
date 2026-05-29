@@ -176,6 +176,9 @@ export default function FasilitasDetailPage() {
           className="object-cover"
           priority
         />
+        {/* Top-down overlay for navbar readability */}
+        <div className="absolute inset-x-0 top-0 h-40 bg-linear-to-b from-neutral-950/80 via-neutral-950/40 to-transparent pointer-events-none z-10" />
+
         <div className="absolute inset-0 bg-linear-to-t from-neutral-950 via-neutral-950/40 to-transparent flex items-end">
           <div className="container mx-auto px-4 md:px-6 pb-16">
             <motion.div
