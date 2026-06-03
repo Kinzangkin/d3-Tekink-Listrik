@@ -43,7 +43,7 @@ interface DashboardSidebarProps {
 
 export function DashboardSidebar({ role: propRole }: DashboardSidebarProps) {
   const pathname = usePathname()
-  const { state } = useSidebar()
+  const { state, isMobile, setOpenMobile } = useSidebar()
   const isCollapsed = state === "collapsed"
   
   // Determine role purely from pathname since SSR x-invoke-path is unreliable
@@ -192,7 +192,13 @@ export function DashboardSidebar({ role: propRole }: DashboardSidebarProps) {
             D3
           </div>
         ) : (
-          <Link href="/" className="flex items-center gap-3 w-full px-2">
+          <Link 
+            href="/" 
+            className="flex items-center gap-3 w-full px-2"
+            onClick={() => {
+              if (isMobile) setOpenMobile(false)
+            }}
+          >
             <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white font-black text-xs shrink-0">
               D3
             </div>
@@ -216,7 +222,14 @@ export function DashboardSidebar({ role: propRole }: DashboardSidebarProps) {
                 return (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton 
-                      render={<Link href={item.url} />}
+                      render={
+                        <Link 
+                          href={item.url} 
+                          onClick={() => {
+                            if (isMobile) setOpenMobile(false)
+                          }}
+                        />
+                      }
                       isActive={isActive}
                       tooltip={item.title}
                       className="font-bold tracking-wide"
