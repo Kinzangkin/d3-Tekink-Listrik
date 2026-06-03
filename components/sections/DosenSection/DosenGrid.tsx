@@ -44,7 +44,7 @@ export function DosenGrid() {
   }, [])
 
   const filteredDosen = useMemo(() => {
-    return dosenList.filter((dosen) => {
+    const filtered = dosenList.filter((dosen) => {
       const searchLower = searchQuery.toLowerCase()
       const matchName = dosen.nama?.toLowerCase().includes(searchLower) || false
       const matchExpertise = dosen.keahlian?.some(k => {
@@ -54,6 +54,8 @@ export function DosenGrid() {
       const matchNip = dosen.nidn?.toLowerCase().includes(searchLower) || false
       return matchName || matchExpertise || matchNip
     })
+    
+    return [...filtered].sort((a, b) => (a.nama || "").localeCompare(b.nama || ""))
   }, [searchQuery, dosenList])
 
   if (isLoading) {
