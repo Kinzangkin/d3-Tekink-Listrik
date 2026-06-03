@@ -86,6 +86,11 @@ export function DashboardSidebar({ role: propRole }: DashboardSidebarProps) {
       icon: GraduationCap,
     },
     {
+      title: "Kurikulum",
+      url: "/dashboard/admin/kurikulum",
+      icon: BookOpen,
+    },
+    {
       title: "Master Kompetensi",
       url: "/dashboard/admin/keahlian",
       icon: Settings,
