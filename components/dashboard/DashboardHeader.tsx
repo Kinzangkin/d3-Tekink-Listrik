@@ -1,6 +1,6 @@
 "use client"
 
-import { Bell, Search } from "lucide-react"
+import { Search } from "lucide-react"
 import { apiGet } from "@/services/api"
 
 import { SidebarTrigger } from "@/components/ui/sidebar"
@@ -169,35 +169,7 @@ export function DashboardHeader() {
 
 
       <div className="flex items-center gap-3">
-        <DropdownMenu>
-          <DropdownMenuTrigger className="h-9 w-9 flex items-center justify-center text-neutral-500 hover:text-primary hover:bg-neutral-100 rounded-full relative transition-colors">
-            <Bell size={18} />
-            <span className="absolute top-2 right-2 w-2 h-2 bg-rose-500 rounded-full border-2 border-white"></span>
-          </DropdownMenuTrigger>
 
-          <DropdownMenuContent align="end" className="w-80 rounded-3xl p-0 overflow-hidden">
-            <div className="p-4 border-b border-neutral-100 bg-neutral-50/50">
-              <h4 className="font-black text-sm uppercase tracking-tight text-neutral-800">Notifikasi Terkini</h4>
-            </div>
-            <div className="max-h-80 overflow-y-auto">
-              <div className="p-4 text-center py-8">
-                <div className="w-12 h-12 bg-neutral-50 rounded-2xl flex items-center justify-center mx-auto mb-3 text-neutral-300">
-                  <Bell size={24} />
-                </div>
-                <p className="text-sm font-bold text-neutral-800 uppercase tracking-tight">Belum ada notifikasi baru</p>
-                <p className="text-xs text-neutral-500 mt-1">Kami akan mengabari Anda jika ada pembaruan sistem atau data.</p>
-              </div>
-            </div>
-            <div className="p-2 bg-neutral-50/50 border-t border-neutral-100 text-center">
-              <Button variant="ghost" className="w-full text-[10px] font-black uppercase tracking-widest text-neutral-400 hover:text-primary">
-                Tandai Semua Sudah Dibaca
-              </Button>
-            </div>
-          </DropdownMenuContent>
-        </DropdownMenu>
-
-
-        <div className="h-6 w-px bg-neutral-200 mx-1 hidden sm:block" />
 
         <DropdownMenu>
           <DropdownMenuTrigger className="relative h-9 rounded-full pl-2 pr-4 gap-2 hidden sm:flex bg-neutral-50 hover:bg-neutral-100 border border-neutral-100 items-center">
