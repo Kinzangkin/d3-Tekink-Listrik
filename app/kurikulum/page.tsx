@@ -13,17 +13,39 @@ import {
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { FaDownload } from "react-icons/fa"
+import { supabase } from "@/lib/supabase"
+
+// Force dynamic rendering to always fetch fresh data from Supabase on request
+export const dynamic = "force-dynamic"
 
 const cplData = [
   { kode: "CPL-01", deskripsi: "Mampu menerapkan matematika, sains, dan prinsip rekayasa untuk menyelesaikan masalah teknik kelistrikan yang kompleks." },
-  { kode: "CPL-02", deskripsi: "Mampu merancang sistem, komponen, atau proses kelistrikan untuk memenuhi kebutuhan spesifik dengan batih yang tepat." },
+  { kode: "CPL-02", deskripsi: "Mampu merancang sistem, components, atau proses kelistrikan untuk memenuhi kebutuhan spesifik dengan batih yang tepat." },
   { kode: "CPL-03", deskripsi: "Mampu mengidentifikasi, merumuskan, dan menganalisis masalah teknik kelistrikan." },
   { kode: "CPL-04", deskripsi: "Mampu menggunakan teknik, keterampilan, dan peralatan teknik modern yang diperlukan untuk praktik teknik." },
   { kode: "CPL-05", deskripsi: "Memiliki tanggung jawab profesional dan etika." },
   { kode: "CPL-06", deskripsi: "Mampu berkomunikasi secara efektif baik lisan maupun tulisan." },
 ]
 
-export default function KurikulumPage() {
+export default async function KurikulumPage() {
+  let mataKuliahData = []
+  
+  try {
+    const { data, error } = await supabase
+      .from("kurikulum")
+      .select("*")
+      .order("semester", { ascending: true })
+      .order("kode", { ascending: true })
+      
+    if (!error && data) {
+      mataKuliahData = data
+    } else if (error) {
+      console.warn("Supabase query returned error:", error.message)
+    }
+  } catch (error) {
+    console.error("Failed to load curriculum data from Supabase, using static fallback:", error)
+  }
+
   return (
     <main className="min-h-screen bg-white">
       <Navbar />
@@ -74,7 +96,7 @@ export default function KurikulumPage() {
             align="left"
           />
           <div className="mt-8">
-            <SemesterAccordion />
+            <SemesterAccordion initialData={mataKuliahData} />
           </div>
 
           <div className="mt-16 bg-primary rounded-3xl p-8 md:p-12 text-white flex flex-col md:flex-row items-center justify-between gap-8">
